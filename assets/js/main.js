@@ -12,10 +12,11 @@
       hint_body_all: 'Совет: «Всё тело» выйдет дешевле — экономия {sum}',
       hint_included: '«Всё тело» уже включает остальные выбранные зоны',
       other_device: 'На {device} эти же зоны — {sum}',
-      dev_alex_case: 'александрите', dev_diode_case: 'диоде',
+      dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
       quiz: {
-        alex: { name: 'Александрит Candela', why: 'Светлая кожа и тёмные волосы — идеальная пара для александрита. Первые результаты уже после первой процедуры, а большие зоны — ноги, руки, спина — обрабатываются очень быстро.' },
-        diode: { name: 'Диод HairBoss X-Fest', why: 'Диод безопасен для любого фототипа, включая смуглую и загорелую кожу, работает круглый год и очень комфортен благодаря системе охлаждения. А ещё он выгоднее по цене.' },
+        alex: { name: 'Candela GentleLase Pro-U', why: 'Золотой стандарт лазерной эпиляции. Подходит для вашего типа кожи и волос, быстро обрабатывает даже большие зоны, а первые результаты видны уже после первой процедуры.' },
+        deka: { name: 'DEKA Motus PRO', why: 'Итальянская платформа с александритовым и неодимовым лазерами — работает с вашим типом кожи и волос. Технология Moveo и охлаждаемый сапфировый наконечник делают процедуру мягкой и комфортной.' },
+        diode: { name: 'HairBoss X-Fest', why: 'Немецкий диод последней модели — подходит для вашего типа кожи и волос, работает круглый год и очень комфортен благодаря современной системе охлаждения.' },
         light: 'Светлые и седые волосы лазер «видит» хуже. Приходите на консультацию — мастер честно скажет, будет ли результат.'
       }
     },
@@ -23,11 +24,12 @@
       from: '{sum} dan', currency: 'so‘m', min: 'daq', hour: 'soat', session: 'muolaja',
       hint_body_all: 'Maslahat: «Butun tana» arzonroq — {sum} tejaysiz',
       hint_included: '«Butun tana» boshqa tanlangan zonalarni ham o‘z ichiga oladi',
-      other_device: 'Shu zonalar {device}da — {sum}',
-      dev_alex_case: 'aleksandrit', dev_diode_case: 'diod',
+      other_device: 'Shu zonalar {device} apparatida — {sum}',
+      dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
       quiz: {
-        alex: { name: 'Aleksandrit Candela', why: 'Och rangli teri va qora tuklar — aleksandrit uchun ideal juftlik. Birinchi natija birinchi muolajadan keyinoq, katta zonalar — oyoqlar, qo‘llar, orqa — juda tez ishlov beriladi.' },
-        diode: { name: 'Diod HairBoss X-Fest', why: 'Diod har qanday fototip uchun, jumladan qoramtir va qoraygan teri uchun xavfsiz, yil davomida ishlaydi va sovutish tizimi tufayli juda qulay. Narxi ham hamyonbop.' },
+        alex: { name: 'Candela GentleLase Pro-U', why: 'Lazer epilyatsiyasining oltin standarti. Teringiz va tuklaringiz turiga mos keladi, katta zonalarga ham tez ishlov beradi, birinchi natija esa birinchi muolajadan keyinoq ko‘rinadi.' },
+        deka: { name: 'DEKA Motus PRO', why: 'Aleksandrit va neodim lazerli italyan platformasi — teringiz va tuklaringiz turi bilan ishlaydi. Moveo texnologiyasi va sovutiladigan safir uchlik muolajani yumshoq va qulay qiladi.' },
+        diode: { name: 'HairBoss X-Fest', why: 'So‘nggi modeldagi nemis diodi — teringiz va tuklaringiz turiga mos, yil davomida ishlaydi va zamonaviy sovutish tizimi tufayli juda qulay.' },
         light: 'Och va oq tuklarni lazer yomonroq «ko‘radi». Konsultatsiyaga keling — usta natija bo‘lish-bo‘lmasligini halol aytadi.'
       }
     }
@@ -95,7 +97,7 @@
   }
 
   /* ---------- калькулятор ---------- */
-  const calc = { sex: 'women', device: 'diode', filter: 'all', selected: new Set() };
+  const calc = { sex: 'women', device: 'alex', filter: 'all', selected: new Set() };
   const groupOrder = LH.groups.map((g) => g.id).filter((id) => id !== 'all');
 
   const currentList = () => LH.prices[calc.sex][calc.device];
@@ -256,16 +258,14 @@
     backBtn.hidden = i === 0 || i === 3;
   }
 
-  function scoreQuiz([skin, hair, prio]) {
-    let alex = 0, diode = 0;
-    if (skin === 'light') alex += 2;
-    if (skin === 'medium') { alex += 1; diode += 1; }
-    if (skin === 'dark') diode += 10; // для смуглой и загорелой кожи — только диод
-    if (hair === 'dark') alex += 1;
-    if (prio === 'speed') alex += 2;
-    if (prio === 'comfort') diode += 1;
-    if (prio === 'budget') diode += 2;
-    return alex > diode ? 'alex' : 'diode';
+  // Каждый аппарат подходит под любые ответы, поэтому результат выдаём по очереди,
+  // чтобы ни один из трёх не остался без внимания.
+  const quizOrder = ['alex', 'deka', 'diode'];
+  function nextQuizDevice() {
+    let i = parseInt(store.get('lh-quiz'), 10);
+    if (Number.isNaN(i)) i = Math.floor(Math.random() * quizOrder.length);
+    store.set('lh-quiz', String((i + 1) % quizOrder.length));
+    return quizOrder[i % quizOrder.length];
   }
 
   function showQuizResult() {
@@ -277,7 +277,7 @@
   $$('.quiz__step .opt').forEach((o) => o.addEventListener('click', () => {
     quiz.answers[quiz.step] = o.dataset.val;
     if (quiz.step < 2) { showStep(quiz.step + 1); return; }
-    quiz.result = scoreQuiz(quiz.answers);
+    quiz.result = nextQuizDevice();
     quiz.done = true;
     showQuizResult();
     showStep(3);

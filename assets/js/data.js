@@ -108,6 +108,10 @@ LH.prices = {
   }
 };
 
+/* DEKA Motus PRO — цены как у Candela */
+LH.prices.women.deka = LH.prices.women.alex;
+LH.prices.men.deka = LH.prices.men.alex;
+
 LH.marquee = {
   ru: ['Бритва', 'Воск', 'Шугаринг', 'Полоски', 'Кремы', 'Эпилятор'],
   uz: ['Ustara', 'Mum', 'Shugaring', 'Chiziqlar', 'Kremlar', 'Epilyator']
@@ -160,8 +164,8 @@ LH.faq = [
   {
     q: { ru: 'Когда будет заметен результат?', uz: 'Natija qachon seziladi?' },
     a: {
-      ru: 'Через 1,5–3 недели после процедуры. Чем темнее волос, тем быстрее видно, что волос стало меньше и растут они медленнее. Лазер разрушает только фолликулы в фазе активного роста — «спящие» волоски он не видит. С каждой процедурой они просыпаются, и к концу курса остаются лишь редкие мягкие светлые волоски.',
-      uz: 'Muolajadan 1,5–3 hafta o‘tib. Tuk qanchalik qora bo‘lsa, ular kamayib, sekin o‘sayotgani shunchalik tez seziladi. Lazer faqat faol o‘sish bosqichidagi follikulalarni yo‘q qiladi — «uxlayotgan» tuklarni u ko‘rmaydi. Har bir muolaja bilan ular uyg‘onadi va kurs oxiriga kelib faqat siyrak, yumshoq va och rangli tukchalar qoladi.'
+      ru: 'Через 7–10 дней после процедуры. Чем темнее волос, тем быстрее видно, что волос стало меньше и растут они медленнее. Лазер разрушает только фолликулы в фазе активного роста — «спящие» волоски он не видит. С каждой процедурой они просыпаются, и к концу курса остаются лишь редкие мягкие светлые волоски.',
+      uz: 'Muolajadan 7–10 kun o‘tib. Tuk qanchalik qora bo‘lsa, ular kamayib, sekin o‘sayotgani shunchalik tez seziladi. Lazer faqat faol o‘sish bosqichidagi follikulalarni yo‘q qiladi — «uxlayotgan» tuklarni u ko‘rmaydi. Har bir muolaja bilan ular uyg‘onadi va kurs oxiriga kelib faqat siyrak, yumshoq va och rangli tukchalar qoladi.'
     }
   },
   {
@@ -174,8 +178,8 @@ LH.faq = [
   {
     q: { ru: 'Это больно?', uz: 'Bu og‘riqlimi?' },
     a: {
-      ru: 'Обычно страшнее ожидание, чем сама процедура. На диодном HairBoss X-Fest ощущается лёгкое тепло и покалывание — работает система охлаждения. Candela подаёт холод (криоохлаждение DCD) перед каждым импульсом. Мастер всё время уточняет ваши ощущения и подбирает параметры.',
-      uz: 'Odatda muolajaning o‘zidan ko‘ra uni kutish qo‘rqinchliroq. Diodli HairBoss X-Fest’da sovutish tizimi tufayli faqat yengil iliqlik va sanchish seziladi. Candela har bir impulsdan oldin sovuq beradi (DCD krio-sovutish). Usta doimo his-tuyg‘ularingizni so‘rab, parametrlarni moslaydi.'
+      ru: 'Обычно страшнее ожидание, чем сама процедура. На Candela кожу охлаждает система Zimmer — поток холодного воздуха. У DEKA Motus PRO — технология Moveo и охлаждаемый сапфировый наконечник. На диодном HairBoss X-Fest ощущается лишь лёгкое тепло и покалывание. Мастер всё время уточняет ваши ощущения и подбирает параметры.',
+      uz: 'Odatda muolajaning o‘zidan ko‘ra uni kutish qo‘rqinchliroq. Candela’da terini Zimmer tizimi — sovuq havo oqimi sovutadi. DEKA Motus PRO’da Moveo texnologiyasi va sovutiladigan safir uchlik bor. Diodli HairBoss X-Fest’da faqat yengil iliqlik va sanchish seziladi. Usta doimo his-tuyg‘ularingizni so‘rab, parametrlarni moslaydi.'
     }
   },
   {
@@ -214,10 +218,10 @@ LH.faq = [
     }
   },
   {
-    q: { ru: 'Диод или александрит — что выбрать?', uz: 'Diod yoki aleksandrit — qaysi birini tanlash kerak?' },
+    q: { ru: 'Какой из трёх лазеров выбрать?', uz: 'Uchta lazerdan qaysi birini tanlash kerak?' },
     a: {
-      ru: 'Лучший лазер — тот, который подходит именно вашей коже и волосам. Александрит Candela — эталон для светлой кожи и тёмных волос с быстрым результатом. Диод HairBoss — универсальный и комфортный, подходит и для смуглой, и для загорелой кожи. Пройдите наш тест выше или спросите мастера на консультации.',
-      uz: 'Eng yaxshi lazer — aynan sizning teringiz va tuklaringizga mos keladigani. Candela aleksandriti — och rangli teri va qora tuklar uchun tez natija beruvchi etalon. HairBoss diodi — universal va qulay, qoramtir va qoraygan teriga ham mos. Yuqoridagi testdan o‘ting yoki konsultatsiyada ustadan so‘rang.'
+      ru: 'Все три аппарата — последних моделей, и каждый работает с разными типами кожи и волос. Candela — золотой стандарт лазерной эпиляции. DEKA Motus PRO — итальянская платформа с александритовым и неодимовым лазерами. HairBoss X-Fest — универсальный и комфортный немецкий диод. Окончательный выбор мастер делает на консультации — под ваш фототип и зону.',
+      uz: 'Uchala apparat ham eng so‘nggi modellar va har biri turli teri va tuk turlari bilan ishlaydi. Candela — lazer epilyatsiyasining oltin standarti. DEKA Motus PRO — aleksandrit va neodim lazerli italyan platformasi. HairBoss X-Fest — universal va qulay nemis diodi. Yakuniy tanlovni usta konsultatsiyada fototipingiz va zonaga qarab qiladi.'
     }
   }
 ];
@@ -226,35 +230,42 @@ LH.faq = [
 LH.uz = {
   nav_lasers: 'Lazerlar', nav_prices: 'Narxlar', nav_course: 'Kurs', nav_prep: 'Tayyorgarlik', nav_faq: 'Savollar', nav_branches: 'Filiallar',
   cta_book: 'Yozilish',
-  hero_eyebrow: 'Lazer epilyatsiyasi studiyalari tarmog‘i · Toshkent',
+  hero_eyebrow: 'Lazer epilyatsiyasi studiyalari tarmog‘i · Toshkent · Samarqand',
   hero_title_html: '<span class="line">Ustarani</span><span class="line"><em>unuting</em>.</span>',
-  hero_sub: 'Asl tibbiy lazerlar Candela (AQSH) va HairBoss X-Fest (Germaniya), tajribali ustalar va teringizga mos apparatni halol tanlash. Dam olish kunlarisiz, 10:00 dan 21:00 gacha.',
+  hero_sub: 'So‘nggi modeldagi uchta asl tibbiy lazer — Candela (AQSH), DEKA (Italiya) va HairBoss X-Fest (Germaniya), tajribali ustalar va teringizga mos apparatni halol tanlash. Dam olish kunlarisiz, 10:00 dan 21:00 gacha.',
   hero_book: 'Onlayn yozilish', hero_tg: 'Telegram’da yozish',
-  stat_followers: 'Instagram’da obunachilar', stat_studios: 'Toshkentda studiyalar', stat_days: 'kun haftasiga, 10–21', stat_course: 'muolaja — to‘liq kurs',
-  trust3_t: 'Asl uskunalar', trust3_d: 'Tibbiy lazerlar', trust4_t: 'Tajribali mutaxassislar', trust4_d: 'Muntazam malaka oshiradi',
-  chip_alex: 'Aleksandrit · AQSH', chip_diode: 'Diod · Germaniya', chip_cool: 'Har bir impulsda sovutish',
+  stat_followers: 'Instagram’da obunachilar', stat_studios: 'Toshkentda studiya', stat_samarkand: 'Samarqandda studiya', stat_days: 'kun haftasiga, 10–21', stat_course: 'muolaja — to‘liq kurs',
+  trust3_t: 'So‘nggi modellar', trust3_d: 'Barcha apparatlar — o‘z sinfining eng yaxshisi', trust4_t: 'Tajribali mutaxassislar', trust4_d: 'Muntazam malaka oshiradi',
+  chip_alex: 'Aleksandrit · AQSH', chip_deka: 'Aleksandrit + neodim · Italiya', chip_diode: 'Diod · Germaniya', chip_cool: 'Har bir impulsda sovutish',
   bye_kicker: 'Hayr, qiynoqlar',
   bye_title_html: 'Hammasi uchun rahmat.<br>Lekin endi sizga <em>ehtiyoj yo‘q</em>.',
   bye_razor: 'Ustara', bye_razor_t: '2 kunda tikanli tuklar va qichishish',
   bye_wax: 'Mum', bye_wax_t: 'Og‘riqli va 3–4 haftada yana boshidan',
   bye_sugar: 'Shugaring', bye_sugar_t: 'Teriga botib o‘sgan tuklar va cheksiz yozilishlar',
+  bye_cheap: 'Sifatsiz apparatlar', bye_cheap_t: 'Bekorga sarflangan pul: zaif natija va kuyish xavfi',
   bye_cream: 'Kremlar', bye_cream_t: 'Terida kimyo va bir-ikki kunlik natija',
   bye_win_t: 'Tuklar ingichka va siyrak bo‘ladi, ustara deyarli kerak bo‘lmaydi. Teriga botgan tuklar va qichishishsiz.',
   bye_win_cta: 'Narxlarni ko‘rish',
   lasers_kicker: 'Texnologiyalar',
-  lasers_title_html: 'Ikki lazer.<br><em>Nol</em> murosa.',
-  lasers_sub: 'Biz «moda apparat» sotmaymiz. Fototipingiz, terining sezgirligi va tuk tuzilishiga qarab texnologiyani tanlaymiz.',
+  lasers_title_html: 'Uchta lazer.<br><em>Nol</em> murosa.',
+  lasers_sub: 'Uchala apparat ham so‘nggi modellar, o‘z sinfining eng yaxshilari. Biz «moda apparat» sotmaymiz — fototipingiz, terining sezgirligi va tuk tuzilishiga qarab texnologiyani tanlaymiz.',
   diode_type: 'Diodli lazer', diode_country: 'Germaniya', diode_tag: 'Qulay va universal',
   diode_b1: 'Barcha teri turlariga, jumladan qoramtir va qoraygan teriga mos',
   diode_b2: 'Yil davomida ishlaydi — mavsumga bog‘liq emas',
   diode_b3: 'Qalin va chuqur joylashgan tuklarni ham samarali olib tashlaydi',
   diode_b4: 'Innovatsion sovutish — faqat yengil iliqlik va sanchish',
   diode_b5: 'Sezgir zonalar uchun ideal: yuz, qo‘ltiq osti, bikini',
-  alex_type: 'Aleksandrit lazeri', alex_country: 'AQSH', alex_tag: 'Aniqlik va tez natija etaloni',
+  deka_type: 'Aleksandrit + neodim', deka_country: 'Italiya', deka_tag: 'Italyan ko‘p funksiyali platformasi',
+  deka_b1: 'Bittada ikki lazer: aleksandrit va neodim',
+  deka_b2: 'Moveo texnologiyasi muolajani yumshoqroq va qulayroq qiladi',
+  deka_b3: 'Sovutiladigan safir uchlik terini asraydi',
+  deka_b4: 'Neodim lazer qoramtir va qoraygan teri bilan ishlaydi',
+  deka_b5: 'Katta zonalar uchun ham, sezgir zonalar uchun ham mos',
+  alex_type: 'Aleksandrit lazeri', alex_country: 'AQSH', alex_tag: 'Lazer epilyatsiyasining oltin standarti',
   alex_b1: 'Och rangli teri va qora tuklar uchun ideal',
   alex_b2: 'Birinchi natija — birinchi muolajadan keyinoq',
   alex_b3: 'Yuqori tezlik: oyoqlar, qo‘llar, orqa — tez',
-  alex_b4: 'DCD krio-sovutish — har bir impulsdan oldin sovuq',
+  alex_b4: 'Zamonaviy sovutish — muolaja qulay o‘tadi',
   alex_b5: 'Terini tekis, silliq va ipakdek qiladi',
   from: 'dan', currency: 'so‘m', see_prices: 'Narxlar',
   quiz_kicker: '30 soniyalik test',
@@ -276,7 +287,7 @@ LH.uz = {
   course_title_html: 'Konsultatsiyadan<br><em>silliq teri</em>gacha',
   step1_t: 'Konsultatsiya va tanlov', step1_d: 'Usta fototip, teri va tuklarni baholaydi, apparat va parametrlarni tanlaydi.',
   step2_t: 'Muolaja', step2_d: 'Zonalarga qarab 5 daqiqadan 3,5 soatgacha. Sovutish, faqat yengil iliqlik.',
-  step3_t: '1,5–3 haftada natija', step3_d: 'Tuklar to‘kiladi, sekinroq va ingichkaroq o‘sadi.',
+  step3_t: '7–10 kunda natija', step3_d: 'Tuklar to‘kiladi, sekinroq va ingichkaroq o‘sadi.',
   step4_t: '6–10 muolajalik kurs', step4_d: '3–6 hafta oraliq: lazer o‘sish bosqichidagi follikulalarni «ushlaydi».',
   step5_t: 'Qo‘llab-quvvatlash', step5_d: 'Kursdan keyin — yarim yilda-yilda 1–2 muolaja.',
   growth_title: 'Har muolajadan keyin tuklar kamayadi', growth_note: 'Sxematik ko‘rinish. Natija individual.', session: 'muolaja',
@@ -284,7 +295,8 @@ LH.uz = {
   pain_title_html: '«Bu <em>og‘riqlimi</em>?»',
   pain_quote: 'Odatda muolajaning o‘zidan ko‘ra uni kutish qo‘rqinchliroq.',
   pain_c1_t: 'HairBoss X-Fest', pain_c1_d: 'Zamonaviy sovutish tizimi: muolaja vaqtida faqat yengil iliqlik va sanchish seziladi.',
-  pain_c2_t: 'Candela GentleLase&nbsp;Pro&#8209;U', pain_c2_d: 'Dynamic Cooling Device har bir impulsdan oldin sovuq beradi va og‘riqni sezilarli kamaytiradi.',
+  pain_c2_t: 'Candela GentleLase&nbsp;Pro&#8209;U', pain_c2_d: 'Zimmer sovutish tizimi teriga sovuq havo oqimini beradi va og‘riqni sezilarli kamaytiradi.',
+  pain_c4_d: 'Moveo texnologiyasi va sovutiladigan safir uchlik muolajani yumshoq va qulay qiladi.',
   pain_c3_t: 'Usta yoningizda', pain_c3_d: 'Usta doimo his-tuyg‘ularingizni so‘raydi va parametrlarni aynan sizga moslaydi.',
   shy_title: 'Bikinidan uyalyapsizmi?',
   shy_1: 'Usta — qiz. U aynan siz kabi tuzilgan va hammasi tez va yumshoq o‘tishini o‘zi xohlaydi.',
@@ -309,7 +321,7 @@ LH.uz = {
   br_book: 'Shu filialga yozilish', br_route: 'Yo‘nalish',
   final_title_html: 'O‘zingni asra, <em>jonim</em>.',
   final_sub: 'Seni studiyada kutamiz. Onlayn, Telegram yoki telefon orqali yozil.',
-  footer_tag: 'Toshkentdagi lazer epilyatsiyasi studiyalari tarmog‘i',
+  footer_tag: 'Toshkent va Samarqanddagi lazer epilyatsiyasi studiyalari tarmog‘i',
   footer_nav: 'Navigatsiya', footer_contacts: 'Kontaktlar', footer_note: 'Narxlar ma’lumot uchun va ommaviy oferta emas.',
   bar_book: 'Yozilish',
   hint_body_all: 'Maslahat: «Butun tana» arzonroq — {sum} tejaysiz',
