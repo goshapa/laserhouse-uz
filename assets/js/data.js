@@ -178,8 +178,8 @@ LH.faq = [
   {
     q: { ru: 'Это больно?', uz: 'Bu og‘riqlimi?' },
     a: {
-      ru: 'Обычно страшнее ожидание, чем сама процедура. На Candela кожу охлаждает система Zimmer — поток холодного воздуха. У DEKA Motus PRO — технология Moveo и охлаждаемый сапфировый наконечник. На диодном HairBoss X-Fest ощущается лишь лёгкое тепло и покалывание. Мастер всё время уточняет ваши ощущения и подбирает параметры.',
-      uz: 'Odatda muolajaning o‘zidan ko‘ra uni kutish qo‘rqinchliroq. Candela’da terini Zimmer tizimi — sovuq havo oqimi sovutadi. DEKA Motus PRO’da Moveo texnologiyasi va sovutiladigan safir uchlik bor. Diodli HairBoss X-Fest’da faqat yengil iliqlik va sanchish seziladi. Usta doimo his-tuyg‘ularingizni so‘rab, parametrlarni moslaydi.'
+      ru: 'Обычно страшнее ожидание, чем сама процедура. На всех трёх аппаратах — Candela, DEKA Motus PRO и HairBoss X-Fest — современное охлаждение, поэтому ощущается лишь лёгкое тепло и покалывание. Мастер всё время уточняет ваши ощущения и подбирает параметры.',
+      uz: 'Odatda muolajaning o‘zidan ko‘ra uni kutish qo‘rqinchliroq. Uchala apparatda — Candela, DEKA Motus PRO va HairBoss X-Fest — zamonaviy sovutish bor, shuning uchun faqat yengil iliqlik va sanchish seziladi. Usta doimo his-tuyg‘ularingizni so‘rab, parametrlarni moslaydi.'
     }
   },
   {
@@ -253,12 +253,12 @@ LH.uz = {
   diode_b1: 'Barcha teri turlariga, jumladan qoramtir va qoraygan teriga mos',
   diode_b2: 'Yil davomida ishlaydi — mavsumga bog‘liq emas',
   diode_b3: 'Qalin va chuqur joylashgan tuklarni ham samarali olib tashlaydi',
-  diode_b4: 'Innovatsion sovutish — faqat yengil iliqlik va sanchish',
+  diode_b4: 'Zamonaviy sovutish — faqat yengil iliqlik va sanchish',
   diode_b5: 'Sezgir zonalar uchun ideal: yuz, qo‘ltiq osti, bikini',
   deka_type: 'Aleksandrit + neodim', deka_country: 'Italiya', deka_tag: 'Italyan ko‘p funksiyali platformasi',
   deka_b1: 'Bittada ikki lazer: aleksandrit va neodim',
   deka_b2: 'Moveo texnologiyasi muolajani yumshoqroq va qulayroq qiladi',
-  deka_b3: 'Sovutiladigan safir uchlik terini asraydi',
+  deka_b3: 'Zamonaviy sovutish terini asraydi',
   deka_b4: 'Neodim lazer qoramtir va qoraygan teri bilan ishlaydi',
   deka_b5: 'Katta zonalar uchun ham, sezgir zonalar uchun ham mos',
   alex_type: 'Aleksandrit lazeri', alex_country: 'AQSH', alex_tag: 'Lazer epilyatsiyasining oltin standarti',
@@ -286,7 +286,7 @@ LH.uz = {
   course_kicker: 'Qanday ishlaydi',
   course_title_html: 'Konsultatsiyadan<br><em>silliq teri</em>gacha',
   step1_t: 'Konsultatsiya va tanlov', step1_d: 'Usta fototip, teri va tuklarni baholaydi, apparat va parametrlarni tanlaydi.',
-  step2_t: 'Muolaja', step2_d: 'Zonalarga qarab 5 daqiqadan 3,5 soatgacha. Sovutish, faqat yengil iliqlik.',
+  step2_t: 'Muolaja', step2_d: 'Zonalarga qarab 5 daqiqadan 3,5 soatgacha. Zamonaviy sovutish, faqat yengil iliqlik.',
   step3_t: '7–10 kunda natija', step3_d: 'Tuklar to‘kiladi, sekinroq va ingichkaroq o‘sadi.',
   step4_t: '6–10 muolajalik kurs', step4_d: '3–6 hafta oraliq: lazer o‘sish bosqichidagi follikulalarni «ushlaydi».',
   step5_t: 'Qo‘llab-quvvatlash', step5_d: 'Kursdan keyin — yarim yilda-yilda 1–2 muolaja.',
@@ -294,9 +294,9 @@ LH.uz = {
   pain_kicker: 'Eng ko‘p beriladigan savol',
   pain_title_html: '«Bu <em>og‘riqlimi</em>?»',
   pain_quote: 'Odatda muolajaning o‘zidan ko‘ra uni kutish qo‘rqinchliroq.',
-  pain_c1_t: 'HairBoss X-Fest', pain_c1_d: 'Zamonaviy sovutish tizimi: muolaja vaqtida faqat yengil iliqlik va sanchish seziladi.',
-  pain_c2_t: 'Candela GentleLase&nbsp;Pro&#8209;U', pain_c2_d: 'Zimmer sovutish tizimi teriga sovuq havo oqimini beradi va og‘riqni sezilarli kamaytiradi.',
-  pain_c4_d: 'Moveo texnologiyasi va sovutiladigan safir uchlik muolajani yumshoq va qulay qiladi.',
+  pain_c1_t: 'HairBoss X-Fest', pain_c1_d: 'Zamonaviy sovutish: muolaja vaqtida faqat yengil iliqlik va sanchish seziladi.',
+  pain_c2_t: 'Candela GentleLase&nbsp;Pro&#8209;U', pain_c2_d: 'Zamonaviy sovutish terini himoya qiladi va og‘riqni sezilarli kamaytiradi.',
+  pain_c4_d: 'Moveo texnologiyasi va zamonaviy sovutish muolajani yumshoq va qulay qiladi.',
   pain_c3_t: 'Usta yoningizda', pain_c3_d: 'Usta doimo his-tuyg‘ularingizni so‘raydi va parametrlarni aynan sizga moslaydi.',
   shy_title: 'Bikinidan uyalyapsizmi?',
   shy_1: 'Usta — qiz. U aynan siz kabi tuzilgan va hammasi tez va yumshoq o‘tishini o‘zi xohlaydi.',

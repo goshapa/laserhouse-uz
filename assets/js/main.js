@@ -15,8 +15,8 @@
       dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
       quiz: {
         alex: { name: 'Candela GentleLase Pro-U', why: 'Золотой стандарт лазерной эпиляции. Подходит для вашего типа кожи и волос, быстро обрабатывает даже большие зоны, а первые результаты видны уже после первой процедуры.' },
-        deka: { name: 'DEKA Motus PRO', why: 'Итальянская платформа с александритовым и неодимовым лазерами — работает с вашим типом кожи и волос. Технология Moveo и охлаждаемый сапфировый наконечник делают процедуру мягкой и комфортной.' },
-        diode: { name: 'HairBoss X-Fest', why: 'Немецкий диод последней модели — подходит для вашего типа кожи и волос, работает круглый год и очень комфортен благодаря современной системе охлаждения.' },
+        deka: { name: 'DEKA Motus PRO', why: 'Итальянская платформа с александритовым и неодимовым лазерами — работает с вашим типом кожи и волос. Технология Moveo и современное охлаждение делают процедуру мягкой и комфортной.' },
+        diode: { name: 'HairBoss X-Fest', why: 'Немецкий диод последней модели — подходит для вашего типа кожи и волос, работает круглый год и очень комфортен благодаря современному охлаждению.' },
         light: 'Светлые и седые волосы лазер «видит» хуже. Приходите на консультацию — мастер честно скажет, будет ли результат.'
       }
     },
@@ -28,8 +28,8 @@
       dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
       quiz: {
         alex: { name: 'Candela GentleLase Pro-U', why: 'Lazer epilyatsiyasining oltin standarti. Teringiz va tuklaringiz turiga mos keladi, katta zonalarga ham tez ishlov beradi, birinchi natija esa birinchi muolajadan keyinoq ko‘rinadi.' },
-        deka: { name: 'DEKA Motus PRO', why: 'Aleksandrit va neodim lazerli italyan platformasi — teringiz va tuklaringiz turi bilan ishlaydi. Moveo texnologiyasi va sovutiladigan safir uchlik muolajani yumshoq va qulay qiladi.' },
-        diode: { name: 'HairBoss X-Fest', why: 'So‘nggi modeldagi nemis diodi — teringiz va tuklaringiz turiga mos, yil davomida ishlaydi va zamonaviy sovutish tizimi tufayli juda qulay.' },
+        deka: { name: 'DEKA Motus PRO', why: 'Aleksandrit va neodim lazerli italyan platformasi — teringiz va tuklaringiz turi bilan ishlaydi. Moveo texnologiyasi va zamonaviy sovutish muolajani yumshoq va qulay qiladi.' },
+        diode: { name: 'HairBoss X-Fest', why: 'So‘nggi modeldagi nemis diodi — teringiz va tuklaringiz turiga mos, yil davomida ishlaydi va zamonaviy sovutish tufayli juda qulay.' },
         light: 'Och va oq tuklarni lazer yomonroq «ko‘radi». Konsultatsiyaga keling — usta natija bo‘lish-bo‘lmasligini halol aytadi.'
       }
     }
