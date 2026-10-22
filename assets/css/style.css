@@ -158,8 +158,7 @@ ul, ol { padding: 0; list-style: none; }
 }
 .arch::before { content: ''; position: absolute; inset: 14px; border-radius: 999px 999px 0 0; border: 1px solid rgba(198, 167, 104, .16); pointer-events: none; }
 .arch__inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
-.arch__mark { width: 56px; height: 56px; color: var(--gold); margin-bottom: 26px; }
-.arch__name { font-family: var(--serif); font-size: 34px; line-height: 1; color: var(--text); margin-bottom: 12px; }
+.arch__logo { width: 72%; height: auto; margin-bottom: 30px; filter: drop-shadow(0 10px 30px rgba(198, 167, 104, .18)); }
 .arch__place { font-size: 10px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); }
 
 /* ---------- trust ---------- */
