@@ -62,7 +62,6 @@
       if (val != null) el.innerHTML = val;
     });
     $$('.lang__btn').forEach((b) => b.classList.toggle('is-active', b.dataset.lang === lang));
-    renderMarquee();
     renderFrom();
     renderFilters();
     renderZones();
@@ -81,14 +80,6 @@
     store.set('lh-lang', lang);
     applyLang();
   }));
-
-  /* ---------- marquee ---------- */
-  function renderMarquee() {
-    const track = $('.js-marquee');
-    const items = LH.marquee[lang].map((w) => `<s>${w}</s><i>✕</i>`).join('');
-    const block = `<span class="marquee__item">${items}<b style="color:var(--y)">LASER HOUSE</b><i>✦</i></span>`;
-    track.innerHTML = block + block;
-  }
 
   /* ---------- цены «от» ---------- */
   function minPrice(device) {
@@ -135,10 +126,10 @@
     // «Всё тело» всегда первым
     list.sort((a, b) => (b[0] === 'body_all') - (a[0] === 'body_all'));
 
-    $('.js-zones').innerHTML = list.map(([key, mins, price], i) => {
+    $('.js-zones').innerHTML = list.map(([key, mins, price]) => {
       const on = calc.selected.has(key);
       const complex = key === 'body_all';
-      return `<button type="button" role="listitem" class="zone${on ? ' is-on' : ''}${complex ? ' zone--complex' : ''}" data-key="${key}" aria-pressed="${on}" style="animation-delay:${Math.min(i * 18, 300)}ms">
+      return `<button type="button" role="listitem" class="zone${on ? ' is-on' : ''}${complex ? ' zone--complex' : ''}" data-key="${key}" aria-pressed="${on}">
         <span class="zone__check"></span>
         <span class="zone__name">${zoneName(key)}${mins ? `<span class="zone__time">≈ ${fmtTime(mins)}</span>` : ''}</span>
         <span class="zone__price">${money(price)}</span>
@@ -161,7 +152,6 @@
     const newTotal = money(total);
     if (totalEl.textContent !== newTotal) {
       totalEl.textContent = newTotal;
-      totalEl.classList.remove('bump'); void totalEl.offsetWidth; totalEl.classList.add('bump');
     }
 
     // на мобильном итог виден в нижней панели
@@ -198,9 +188,8 @@
       const thumb = $('.seg__thumb', seg);
       if (!active || !thumb) return;
       thumb.style.width = active.offsetWidth + 'px';
-      thumb.style.transform = `translateX(${active.offsetLeft - 5}px)`;
+      thumb.style.transform = `translateX(${active.offsetLeft}px)`;
     });
-    $('.seg--device').classList.toggle('is-alex', calc.device === 'alex');
   }
 
   function setSeg(name, val) {
@@ -407,67 +396,6 @@
     });
   }, { threshold: 0.6 });
   $$('.js-count').forEach((el) => counters.observe(el));
-
-  /* ---------- свечение за курсором и 3D-сертификат ---------- */
-  const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (fine && !reduceMotion) {
-    const glow = $('.cursor-glow');
-    let gx = 0, gy = 0, cx = 0, cy = 0;
-    window.addEventListener('pointermove', (e) => { gx = e.clientX; gy = e.clientY; }, { passive: true });
-    (function loop() {
-      cx += (gx - cx) * 0.12; cy += (gy - cy) * 0.12;
-      glow.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
-      requestAnimationFrame(loop);
-    })();
-
-    const card = $('.js-tilt');
-    const zone = card.parentElement;
-    zone.addEventListener('pointermove', (e) => {
-      const r = zone.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      card.style.transform = `rotateY(${(x - 0.5) * 24}deg) rotateX(${(0.5 - y) * 18}deg)`;
-      card.style.setProperty('--mx', x * 100 + '%');
-      card.style.setProperty('--my', y * 100 + '%');
-    });
-    zone.addEventListener('pointerleave', () => { card.style.transform = ''; });
-  }
-
-  /* ---------- частицы в hero ---------- */
-  const canvas = $('.hero__canvas');
-  const ctx = canvas.getContext('2d');
-  let parts = [], W = 0, H = 0, heroVisible = true;
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = canvas.offsetWidth; H = canvas.offsetHeight;
-    canvas.width = W * dpr; canvas.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const n = Math.round(Math.min(70, W / 18));
-    parts = Array.from({ length: n }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      r: Math.random() * 1.6 + 0.3, s: Math.random() * 0.35 + 0.08,
-      a: Math.random() * 0.6 + 0.15, y2: Math.random() < 0.55
-    }));
-  }
-  function draw() {
-    if (heroVisible) {
-      ctx.clearRect(0, 0, W, H);
-      for (const p of parts) {
-        p.y -= p.s; p.x += Math.sin(p.y / 60) * 0.15;
-        if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.y2 ? `rgba(255,214,10,${p.a})` : `rgba(245,242,234,${p.a * 0.6})`;
-        ctx.fill();
-      }
-    }
-    requestAnimationFrame(draw);
-  }
-  if (!reduceMotion) {
-    resize();
-    window.addEventListener('resize', resize);
-    new IntersectionObserver(([en]) => { heroVisible = en.isIntersecting; }).observe(hero);
-    draw();
-  }
 
   /* ---------- старт ---------- */
   applyLang();
