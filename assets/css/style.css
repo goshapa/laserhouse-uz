@@ -147,24 +147,20 @@ ul, ol { padding: 0; list-style: none; }
 .stat dt { font-family: var(--serif); font-size: clamp(32px, 3vw, 42px); line-height: 1; color: var(--text); }
 .stat dd { font-size: 12px; color: var(--muted); margin-top: 10px; max-width: 140px; line-height: 1.45; letter-spacing: .02em; }
 
-/* aperture — тонкая линейная графика, одна медленная анимация */
-.hero__visual { position: relative; aspect-ratio: 1; width: 100%; max-width: 480px; justify-self: center; }
-.aperture { position: absolute; inset: 0; }
-.aperture .ring { position: absolute; border-radius: 50%; border: 1px solid var(--line); }
-.aperture .r1 { inset: 0; }
-.aperture .r2 { inset: 13%; border-color: rgba(198, 167, 104, .22); }
-.aperture .r3 { inset: 27%; border-color: rgba(198, 167, 104, .32); }
-.aperture .r4 { inset: 40%; border-color: rgba(198, 167, 104, .5); }
-.aperture__orbit { position: absolute; inset: 13%; border-radius: 50%; animation: spin 48s linear infinite; }
-.aperture__orbit i { position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 14px rgba(198, 167, 104, .7); }
-.aperture__core { position: absolute; inset: 46%; border-radius: 50%; background: radial-gradient(circle, var(--gold-light), var(--gold) 55%, transparent 72%); box-shadow: 0 0 60px 18px rgba(198, 167, 104, .18); }
-.aperture__axis { position: absolute; inset: 0; }
-.aperture__axis::before, .aperture__axis::after { content: ''; position: absolute; background: linear-gradient(90deg, transparent, rgba(232, 220, 200, .14), transparent); }
-.aperture__axis::before { left: 0; right: 0; top: 50%; height: 1px; }
-.aperture__axis::after { top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(180deg, transparent, rgba(232, 220, 200, .14), transparent); }
-.aperture__caption { position: absolute; right: 0; bottom: 4%; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 10px; letter-spacing: .26em; text-transform: uppercase; color: var(--muted); }
-.aperture__caption b { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: .02em; text-transform: none; color: var(--gold); }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* hero visual — спокойная арка под будущее фото студии */
+.hero__visual { position: relative; width: 100%; max-width: 420px; justify-self: center; }
+.arch {
+  position: relative; aspect-ratio: 4 / 5; border-radius: 999px 999px 0 0; overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 30%, rgba(226, 207, 162, .16), transparent 70%),
+    linear-gradient(180deg, #1c1915 0%, #121110 100%);
+  border: 1px solid rgba(198, 167, 104, .35);
+}
+.arch::before { content: ''; position: absolute; inset: 14px; border-radius: 999px 999px 0 0; border: 1px solid rgba(198, 167, 104, .16); pointer-events: none; }
+.arch__inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
+.arch__mark { width: 56px; height: 56px; color: var(--gold); margin-bottom: 26px; }
+.arch__name { font-family: var(--serif); font-size: 34px; line-height: 1; color: var(--text); margin-bottom: 12px; }
+.arch__place { font-size: 10px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); }
 
 /* ---------- trust ---------- */
 .trust { border-block: 1px solid var(--line); background: var(--bg-2); }
@@ -450,7 +446,7 @@ details[open] > summary .plus::after { transform: translate(-50%, -50%) rotate(0
   .header__phone { display: none; }
   .hero { padding-top: calc(var(--header-h) + 32px); }
   .hero__inner { grid-template-columns: 1fr; gap: 28px; }
-  .hero__visual { max-width: 300px; order: -1; width: 60%; }
+  .hero__visual { display: none; }
   .stats { grid-template-columns: repeat(2, 1fr); gap: 28px; }
   .section__head--split { flex-direction: column; align-items: flex-start; gap: 20px; }
   .lasers__grid, .branches__grid { grid-template-columns: 1fr; }
@@ -487,7 +483,6 @@ details[open] > summary .plus::after { transform: translate(-50%, -50%) rotate(0
   .hero__title { font-size: clamp(54px, 16vw, 80px); }
   .hero__cta .btn { width: 100%; }
   .hero__cta { margin-bottom: 48px; }
-  .hero__visual { width: 52%; }
   .trust__inner { grid-template-columns: 1fr; }
   .trust__item, .trust__item:nth-child(3) { border-left: 0; padding: 22px 0; }
   .trust__item + .trust__item { border-top: 1px solid var(--line); }
