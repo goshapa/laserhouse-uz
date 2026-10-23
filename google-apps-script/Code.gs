@@ -4,14 +4,13 @@
  *
  * Установка:
  *  1. Создайте Google Таблицу → Расширения → Apps Script → вставьте этот код целиком.
- *  2. Впишите SECRET (тот же, что в переменной SHEETS_SECRET у бота).
- *  3. Развернуть → Новое развёртывание → Тип «Веб-приложение»,
+ *  2. Развернуть → Новое развёртывание → Тип «Веб-приложение»,
  *     «Запуск от имени»: Я, «У кого есть доступ»: Все → Развернуть → разрешить доступ.
- *  4. Ссылку веб-приложения (…/exec) пропишите боту в SHEETS_URL.
+ *  3. Ссылку веб-приложения (…/exec) пропишите боту в SHEETS_URL.
  *
- * Без верного SECRET скрипт ничего не отдаёт и не меняет.
+ * Ключ доступа: при первом запросе скрипт запоминает ключ бота (SHEETS_SECRET) в свойствах
+ * скрипта и дальше принимает только его. Сбросить: Настройки проекта → Свойства скрипта → удалить SECRET.
  */
-const SECRET = 'PASTE_SECRET_HERE';
 const SHEET_NAME = 'Сертификаты';
 const HEAD = [
   'Код', 'Номинал', 'Остаток', 'Статус', 'Покупатель', 'Телефон', 'Получатель',
@@ -30,11 +29,18 @@ function doPost(e) {
   } catch (err) {
     return out({ ok: false, error: 'bad json' });
   }
-  if (!req || req.secret !== SECRET || SECRET === 'PASTE_SECRET_HERE') return out({ ok: false, error: 'forbidden' });
-
   const lock = LockService.getScriptLock();
   lock.waitLock(20000); // операции идут по очереди — два админа не испортят остаток
   try {
+    const props = PropertiesService.getScriptProperties();
+    const secret = props.getProperty('SECRET');
+    const given = req && typeof req.secret === 'string' ? req.secret : '';
+    if (!secret) {
+      if (given.length < 32) return out({ ok: false, error: 'forbidden' });
+      props.setProperty('SECRET', given); // первый запрос бота закрепляет ключ
+    } else if (given !== secret) {
+      return out({ ok: false, error: 'forbidden' });
+    }
     return out({ ok: true, result: handle(req) });
   } catch (err) {
     return out({ ok: false, error: String((err && err.message) || err) });
