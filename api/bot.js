@@ -613,6 +613,9 @@ async function handleMessage(msg) {
     return show(ctx, t.menu, menuRows(l));
   }
 
+  // в логах Vercel видно, с какой командой пришёл клиент (например, /start cert с сайта)
+  if (text.startsWith('/')) console.log(`[bot] command from ${ctx.from.id}: ${text.slice(0, 40)}`);
+
   const start = text.match(/^\/start(?:@\w+)?(?:\s+(\S+))?/);
   const cmd = start ? (start[1] || '') : (text.match(/^\/(\w+)/) || [])[1];
   if (cmd != null) {
