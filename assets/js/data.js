@@ -49,7 +49,8 @@ LH.zones = {
   toes:             { ru: 'Пальцы ног',               uz: 'Oyoq barmoqlari', g: 'legs' },
   bikini_deep:      { ru: 'Бикини глубокое',          uz: 'Chuqur bikini', g: 'intim' },
   bikini_classic:   { ru: 'Бикини классическое',      uz: 'Klassik bikini', g: 'intim' },
-  bikini_deep_m:    { ru: 'Интимная зона (глубокое бикини)', uz: 'Intim zona (chuqur bikini)', g: 'intim' }
+  bikini_deep_m:    { ru: 'Бикини глубокое (интимная зона)', uz: 'Chuqur bikini (intim zona)', g: 'intim' },
+  lip_m:            { ru: 'Верхняя губа (усы)',       uz: 'Yuqori lab (mo‘ylov)', g: 'face' }
 };
 
 LH.groups = [
@@ -60,6 +61,19 @@ LH.groups = [
   { id: 'legs',    ru: 'Ноги',        uz: 'Oyoqlar' },
   { id: 'intim',   ru: 'Интим',       uz: 'Intim' },
   { id: 'complex', ru: 'Комплекс',    uz: 'Kompleks' }
+];
+
+/* Разделы мужского прайса — как в прайсе студии */
+LH.menGroups = [
+  { id: 'm_face',   ru: 'Лицо',             uz: 'Yuz' },
+  { id: 'm_neck',   ru: 'Шея',              uz: 'Bo‘yin' },
+  { id: 'm_chest',  ru: 'Грудь',            uz: 'Ko‘krak' },
+  { id: 'm_bikini', ru: 'Бикини',           uz: 'Bikini' },
+  { id: 'm_arms',   ru: 'Руки и подмышки',  uz: 'Qo‘llar va qo‘ltiq osti' },
+  { id: 'm_legs',   ru: 'Ноги',             uz: 'Oyoqlar' },
+  { id: 'm_belly',  ru: 'Живот',            uz: 'Qorin' },
+  { id: 'm_back',   ru: 'Спина и ягодицы',  uz: 'Orqa va dumba' },
+  { id: 'complex',  ru: 'Всё тело',         uz: 'Butun tana' }
 ];
 
 LH.prices = {
@@ -86,31 +100,33 @@ LH.prices = {
     ]
   },
   men: {
-    diode: [
-      ['body_all', 0, 2000000], ['face_full', 30, 390000], ['beard', 20, 390000], ['lip', 10, 150000],
-      ['chin', 15, 180000], ['cheeks', 15, 180000], ['forehead', 10, 180000], ['sideburns', 15, 130000],
-      ['ears', 20, 140000], ['neck_full', 25, 300000], ['neck_front', 15, 180000], ['neck_back', 15, 180000],
-      ['armpits', 15, 250000], ['shoulders', 20, 300000], ['arms_full', 30, 400000], ['arms_upper', 20, 300000],
-      ['arms_lower', 20, 300000], ['hands', 15, 200000], ['fingers', 10, 100000], ['chest_full', 30, 300000],
-      ['between_breasts', 15, 200000], ['areolas', 10, 150000], ['belly_full', 25, 350000], ['line_pubis_chest', 15, 180000],
-      ['line_pubis_navel', 15, 180000], ['back', 35, 450000], ['lower_back', 25, 300000], ['buttocks', 30, 450000],
-      ['legs_full', 40, 480000], ['legs_half', 25, 300000], ['toes', 10, 150000], ['bikini_deep_m', 20, 400000]
-    ],
+    /* Для мужчин — только Candela. Порядок и разделы — как в прайсе студии.
+       Формат: [зона, минуты, цена со скидкой, цена без скидки, раздел] */
     alex: [
-      ['body_all', 180, 3890000], ['face_full', 20, 450000], ['lip', 20, 200000], ['chin', 80, 150000],
-      ['cheeks', 20, 200000], ['forehead', 20, 200000], ['sideburns', 20, 200000], ['neck_full', 20, 200000],
-      ['neck_front', 20, 150000], ['neck_back', 20, 150000], ['armpits', 20, 250000], ['shoulders', 20, 300000],
-      ['arms_full', 30, 590000], ['arms_upper', 30, 300000], ['arms_lower', 30, 300000], ['hands', 20, 170000],
-      ['fingers', 20, 70000], ['chest_full', 30, 390000], ['belly_full', 30, 490000], ['line_navel_chest', 20, 150000],
-      ['line_pubis_navel', 20, 150000], ['back', 40, 590000], ['lower_back', 30, 175000], ['buttocks', 30, 400000],
-      ['legs_full', 50, 900000], ['legs_half', 40, 600000], ['toes', 20, 70000], ['bikini_deep_m', 20, 490000]
+      ['face_full', 20, 450000, 600000, 'm_face'], ['cheeks', 20, 200000, 300000, 'm_face'],
+      ['forehead', 20, 200000, 300000, 'm_face'], ['lip_m', 20, 200000, 300000, 'm_face'],
+      ['chin', 20, 150000, 200000, 'm_face'], ['sideburns', 20, 200000, 300000, 'm_face'],
+      ['neck_full', 20, 200000, 300000, 'm_neck'], ['neck_front', 20, 150000, 250000, 'm_neck'],
+      ['neck_back', 20, 150000, 250000, 'm_neck'],
+      ['chest_full', 30, 390000, 500000, 'm_chest'],
+      ['bikini_deep_m', 20, 490000, 600000, 'm_bikini'],
+      ['arms_full', 30, 590000, 750000, 'm_arms'], ['arms_upper', 30, 300000, 500000, 'm_arms'],
+      ['arms_lower', 30, 300000, 500000, 'm_arms'], ['shoulders', 20, 300000, 500000, 'm_arms'],
+      ['armpits', 20, 250000, 300000, 'm_arms'], ['fingers', 20, 70000, 100000, 'm_arms'],
+      ['hands', 20, 170000, 200000, 'm_arms'],
+      ['legs_full', 50, 900000, 1600000, 'm_legs'], ['legs_half', 40, 600000, 800000, 'm_legs'],
+      ['toes', 20, 70000, 100000, 'm_legs'],
+      ['belly_full', 30, 490000, 700000, 'm_belly'], ['line_pubis_navel', 20, 150000, 200000, 'm_belly'],
+      ['line_navel_chest', 20, 150000, 200000, 'm_belly'],
+      ['lower_back', 30, 175000, 300000, 'm_back'], ['back', 40, 590000, 800000, 'm_back'],
+      ['buttocks', 30, 400000, 500000, 'm_back'],
+      ['body_all', 180, 3890000, 4200000, 'complex']
     ]
   }
 };
 
-/* DEKA Motus PRO — цены как у Candela */
+/* DEKA Motus PRO — цены как у Candela (только женский прайс) */
 LH.prices.women.deka = LH.prices.women.alex;
-LH.prices.men.deka = LH.prices.men.alex;
 
 LH.marquee = {
   ru: ['Бритва', 'Воск', 'Шугаринг', 'Полоски', 'Кремы', 'Эпилятор'],

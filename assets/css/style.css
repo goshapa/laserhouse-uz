@@ -253,6 +253,13 @@ ul, ol { padding: 0; list-style: none; }
 .filter sup { font-size: 10px; color: var(--gold); margin-left: 4px; }
 .filter.is-active sup { color: var(--gold-2); }
 
+.calc__list.calc__list--single { grid-template-columns: 1fr; }
+.calc__note { margin: -16px 0 28px; padding-left: 14px; border-left: 1px solid var(--gold); font-size: 13px; color: var(--muted); }
+.seg__btn[hidden] { display: none; }
+.zone-group { grid-column: 1 / -1; margin-top: 18px; padding: 14px 4px 10px; border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+.zone-group:first-child { margin-top: 0; }
+.zone__price s { display: block; font-family: var(--sans); font-size: 12px; color: var(--muted); text-decoration-color: rgba(198, 167, 104, .6); text-align: right; line-height: 1.2; }
+.summary__alt s { color: var(--muted); }
 .calc__layout { display: grid; grid-template-columns: 1fr 360px; gap: 56px; align-items: start; }
 .calc__list { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 40px; border-top: 1px solid var(--line); }
 .zone {

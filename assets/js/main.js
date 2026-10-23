@@ -13,6 +13,8 @@
       hint_included: '«Всё тело» уже включает остальные выбранные зоны',
       other_device: 'На {device} эти же зоны — {sum}',
       dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
+      men_note: 'Мужская лазерная эпиляция — на Candela GentleLase Pro-U. Цены указаны с учётом скидки.',
+      no_discount: 'Без скидки', you_save: 'выгода',
       quiz: {
         alex: { name: 'Candela GentleLase Pro-U', why: 'Золотой стандарт лазерной эпиляции. Подходит для вашего типа кожи и волос, быстро обрабатывает даже большие зоны, а первые результаты видны уже после первой процедуры.' },
         deka: { name: 'DEKA Motus PRO', why: 'Итальянская платформа с александритовым и неодимовым лазерами — работает с вашим типом кожи и волос. Технология Moveo и современное охлаждение делают процедуру мягкой и комфортной.' },
@@ -26,6 +28,8 @@
       hint_included: '«Butun tana» boshqa tanlangan zonalarni ham o‘z ichiga oladi',
       other_device: 'Shu zonalar {device} apparatida — {sum}',
       dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
+      men_note: 'Erkaklar lazer epilyatsiyasi — Candela GentleLase Pro-U’da. Narxlar chegirma bilan ko‘rsatilgan.',
+      no_discount: 'Chegirmasiz', you_save: 'foyda',
       quiz: {
         alex: { name: 'Candela GentleLase Pro-U', why: 'Lazer epilyatsiyasining oltin standarti. Teringiz va tuklaringiz turiga mos keladi, katta zonalarga ham tez ishlov beradi, birinchi natija esa birinchi muolajadan keyinoq ko‘rinadi.' },
         deka: { name: 'DEKA Motus PRO', why: 'Aleksandrit va neodim lazerli italyan platformasi — teringiz va tuklaringiz turi bilan ishlaydi. Moveo texnologiyasi va zamonaviy sovutish muolajani yumshoq va qulay qiladi.' },
@@ -85,7 +89,7 @@
 
   /* ---------- цены «от» ---------- */
   function minPrice(device) {
-    return Math.min(...['women', 'men'].flatMap((s) => LH.prices[s][device].map((r) => r[2])));
+    return Math.min(...['women', 'men'].flatMap((s) => (LH.prices[s][device] || []).map((r) => r[2])));
   }
   function renderFrom() {
     $$('.js-from').forEach((el) => {
@@ -101,17 +105,25 @@
   const groupOrder = LH.groups.map((g) => g.id).filter((id) => id !== 'all');
 
   const currentList = () => LH.prices[calc.sex][calc.device];
-  const priceMap = (sex, device) => new Map(LH.prices[sex][device].map((r) => [r[0], r]));
+  const priceMap = (sex, device) => new Map((LH.prices[sex][device] || []).map((r) => [r[0], r]));
+  // у мужского прайса свои разделы (5-й элемент строки), у женского — общие из LH.zones
+  const groupOf = (row) => row[4] || LH.zones[row[0]].g;
+  const groupsFor = () => (calc.sex === 'men' ? [LH.groups[0], ...LH.menGroups] : LH.groups);
 
   function renderFilters() {
     const list = currentList();
+    const byKey = new Map(list.map((r) => [r[0], groupOf(r)]));
+    const sel = [...calc.selected].filter((k) => byKey.has(k));
     const wrap = $('.js-filters');
-    wrap.innerHTML = LH.groups
-      .filter((g) => g.id === 'all' || list.some((r) => LH.zones[r[0]].g === g.id))
+    wrap.innerHTML = groupsFor()
+      .filter((g) => g.id === 'all' || list.some((r) => groupOf(r) === g.id))
       .map((g) => {
-        const n = g.id === 'all' ? calc.selected.size : [...calc.selected].filter((k) => LH.zones[k].g === g.id).length;
+        const n = g.id === 'all' ? sel.length : sel.filter((k) => byKey.get(k) === g.id).length;
         return `<button type="button" role="tab" class="filter${calc.filter === g.id ? ' is-active' : ''}" data-g="${g.id}">${g[lang]}${n ? `<sup>${n}</sup>` : ''}</button>`;
       }).join('');
+    const note = $('.js-calc-note');
+    note.hidden = calc.sex !== 'men';
+    note.textContent = t('men_note');
   }
 
   function fmtTime(m) {
@@ -121,20 +133,28 @@
   }
 
   function renderZones() {
-    const list = currentList()
-      .filter((r) => calc.filter === 'all' || LH.zones[r[0]].g === calc.filter)
-      .slice()
-      .sort((a, b) => groupOrder.indexOf(LH.zones[a[0]].g) - groupOrder.indexOf(LH.zones[b[0]].g));
-    // «Всё тело» всегда первым
-    list.sort((a, b) => (b[0] === 'body_all') - (a[0] === 'body_all'));
+    let list = currentList().filter((r) => calc.filter === 'all' || groupOf(r) === calc.filter);
+    if (calc.sex !== 'men') {
+      // женский прайс: по разделам, «Всё тело» первым
+      list = list.slice().sort((a, b) => groupOrder.indexOf(groupOf(a)) - groupOrder.indexOf(groupOf(b)));
+      list.sort((a, b) => (b[0] === 'body_all') - (a[0] === 'body_all'));
+    }
+    const groupName = (id) => (LH.menGroups.find((g) => g.id === id) || {})[lang];
 
-    $('.js-zones').innerHTML = list.map(([key, mins, price]) => {
+    // мужской прайс — одной колонкой, как лист прайса студии
+    $('.js-zones').classList.toggle('calc__list--single', calc.sex === 'men');
+    let prevGroup = null;
+    $('.js-zones').innerHTML = list.map(([key, mins, price, old, group]) => {
       const on = calc.selected.has(key);
       const complex = key === 'body_all';
-      return `<button type="button" role="listitem" class="zone${on ? ' is-on' : ''}${complex ? ' zone--complex' : ''}" data-key="${key}" aria-pressed="${on}">
+      // мужской прайс: заголовки разделов, как в прайсе студии
+      const head = calc.sex === 'men' && calc.filter === 'all' && group !== prevGroup && group !== 'complex'
+        ? `<p class="zone-group">${groupName(group)}</p>` : '';
+      prevGroup = group;
+      return `${head}<button type="button" role="listitem" class="zone${on ? ' is-on' : ''}${complex ? ' zone--complex' : ''}" data-key="${key}" aria-pressed="${on}">
         <span class="zone__check"></span>
         <span class="zone__name">${zoneName(key)}${mins ? `<span class="zone__time">≈ ${fmtTime(mins)}</span>` : ''}</span>
-        <span class="zone__price">${money(price)}</span>
+        <span class="zone__price">${old ? `<s>${fmt(old)}</s>` : ''}${money(price)}</span>
       </button>`;
     }).join('');
   }
@@ -174,10 +194,16 @@
 
     // сравнение с другим аппаратом
     const alt = $('.js-alt');
+    alt.hidden = true;
+    if (keys.length && keys.every((k) => map.get(k)[3])) {
+      const old = keys.reduce((s, k) => s + map.get(k)[3], 0);
+      alt.innerHTML = `${t('no_discount')}: <s>${money(old)}</s> · ${t('you_save')} <b>${money(old - total)}</b>`;
+      alt.hidden = false;
+      return;
+    }
     const otherDev = calc.device === 'diode' ? 'alex' : 'diode';
     const other = priceMap(calc.sex, otherDev);
-    alt.hidden = true;
-    if (keys.length && keys.every((k) => other.has(k))) {
+    if (keys.length && other.size && keys.every((k) => other.has(k))) {
       const sum = keys.reduce((s, k) => s + other.get(k)[2], 0);
       alt.innerHTML = tpl(t('other_device'), { device: t(`dev_${otherDev}_case`), sum: `<b>${money(sum)}</b>` });
       alt.hidden = false;
@@ -194,11 +220,20 @@
     });
   }
 
+  function markSeg(name) {
+    $$(`.seg[data-seg="${name}"] .seg__btn`).forEach((b) => b.classList.toggle('is-active', b.dataset.val === calc[name]));
+  }
+
   function setSeg(name, val) {
     calc[name] = val;
-    $$(`.seg[data-seg="${name}"] .seg__btn`).forEach((b) => b.classList.toggle('is-active', b.dataset.val === val));
+    // мужской прайс есть только на Candela
+    if (name === 'sex' && val === 'men') calc.device = 'alex';
+    if (name === 'device' && val !== 'alex' && calc.sex === 'men') calc.sex = 'women';
+    markSeg('sex');
+    markSeg('device');
+    $$('.seg[data-seg="device"] .seg__btn').forEach((b) => { b.hidden = calc.sex === 'men' && b.dataset.val !== 'alex'; });
     const list = currentList();
-    if (calc.filter !== 'all' && !list.some((r) => LH.zones[r[0]].g === calc.filter)) calc.filter = 'all';
+    if (calc.filter !== 'all' && !list.some((r) => groupOf(r) === calc.filter)) calc.filter = 'all';
     updateSegs();
     renderFilters();
     renderZones();
