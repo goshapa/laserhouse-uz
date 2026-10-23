@@ -259,6 +259,16 @@ LH.faq = [
 
 /* Переводы интерфейса. Русский текст берётся прямо из HTML. */
 LH.uz = {
+  nav_results: 'Natijalar', nav_reviews: 'Sharhlar',
+  res_kicker: 'Natijalar', res_title_html: 'Oldin va <em>keyin</em>',
+  res_sub: 'Ustalarimizning haqiqiy ishlari — Laser House mijozlari suratlari. Ko‘rish uchun suratni bosing.',
+  res_note: 'Natija individual va zona, teri hamda tuk turiga bog‘liq.',
+  res_c1: '2 muolajadan keyin', res_c2: 'Qo‘ltiq osti', res_c3: '1 muolajadan keyin', res_c4: '5 muolajadan keyin', res_c5: 'Oyoqlar', res_c6: 'Qo‘ltiq osti',
+  rev_kicker: 'Sharhlar', rev_title_html: '<em>5,0</em> — mijozlarimiz bahosi',
+  rev_sub: 'Yandex Xaritalar va 2GIS’da 500 dan ortiq baho. Quyidagi sharhlar to‘g‘ridan-to‘g‘ri Yandex Xaritalardan yuklanadi.',
+  rev_ig: 'Dolzarb bo‘limidagi «Отзывы»', rev_tab1: 'Buyuk Ipak Yo‘li, 13', rev_tab2: 'Nukus, 72/2',
+  rev_loading: 'Sharhlar Yandex Xaritalardan yuklanmoqda…',
+  rev_ya: 'Yandex Xaritalar', rev_all: 'Yandex Xaritalardagi barcha sharhlar', rev_note: 'Sharhlar Yandex Xaritalardan yuklanadi va mijozlar yangilarini qoldirganda o‘zi yangilanadi.',
   nav_lasers: 'Lazerlar', nav_prices: 'Narxlar', nav_course: 'Kurs', nav_prep: 'Tayyorgarlik', nav_faq: 'Savollar', nav_branches: 'Filiallar',
   cta_book: 'Yozilish',
   hero_eyebrow: 'Lazer epilyatsiyasi studiyalari tarmog‘i · Toshkent · Samarqand',

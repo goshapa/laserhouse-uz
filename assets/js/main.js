@@ -453,6 +453,62 @@
   }, { threshold: 0.6 });
   $$('.js-count').forEach((el) => counters.observe(el));
 
+  /* ---------- до/после: карусель и просмотр на весь экран ---------- */
+  const resTrack = $('.js-results');
+  if (resTrack) {
+    const step = () => resTrack.querySelector('.result').offsetWidth + 20;
+    $('.js-res-prev').addEventListener('click', () => resTrack.scrollBy({ left: -step(), behavior: 'smooth' }));
+    $('.js-res-next').addEventListener('click', () => resTrack.scrollBy({ left: step(), behavior: 'smooth' }));
+
+    const lb = $('.js-lightbox');
+    const lbImg = $('.js-lb-img');
+    const items = $$('.result__open', resTrack);
+    let cur = 0;
+    const showAt = (i) => {
+      cur = (i + items.length) % items.length;
+      const img = $('img', items[cur]);
+      lbImg.src = img.src.replace('-sm.webp', '.webp');
+      lbImg.alt = img.alt;
+    };
+    items.forEach((b, i) => b.addEventListener('click', () => { showAt(i); lb.showModal(); }));
+    $('.js-lb-prev').addEventListener('click', () => showAt(cur - 1));
+    $('.js-lb-next').addEventListener('click', () => showAt(cur + 1));
+    $('.js-lb-close').addEventListener('click', () => lb.close());
+    lb.addEventListener('click', (e) => { if (e.target === lb) lb.close(); });
+    lb.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') showAt(cur - 1);
+      if (e.key === 'ArrowRight') showAt(cur + 1);
+    });
+  }
+
+  /* ---------- отзывы: официальный виджет Яндекс Карт (один на странице — два Яндекс не отрисовывает) ---------- */
+  const yBox = $('.js-ywidget');
+  if (yBox) {
+    const setOrg = (org) => {
+      let f = $('iframe', yBox);
+      if (!f) {
+        f = document.createElement('iframe');
+        f.title = 'Отзывы Laser House на Яндекс Картах';
+        f.addEventListener('load', () => yBox.classList.remove('is-loading'));
+        yBox.appendChild(f);
+      }
+      yBox.classList.add('is-loading');
+      yBox.dataset.org = org;
+      f.src = `https://yandex.ru/maps-reviews-widget/${org}?comments`;
+    };
+    // грузим, только когда блок близко к экрану
+    new IntersectionObserver(([en], obs) => {
+      if (!en.isIntersecting) return;
+      setOrg(yBox.dataset.org);
+      obs.disconnect();
+    }, { rootMargin: '400px 0px' }).observe(yBox);
+    $$('.ywidget__tab').forEach((tab) => tab.addEventListener('click', () => {
+      $$('.ywidget__tab').forEach((x) => { x.classList.toggle('is-active', x === tab); x.setAttribute('aria-selected', x === tab); });
+      $('.js-yall').href = tab.dataset.url;
+      setOrg(tab.dataset.org);
+    }));
+  }
+
   /* ---------- старт ---------- */
   applyLang();
 })();

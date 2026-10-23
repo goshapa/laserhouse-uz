@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=202610231408">
+  <link rel="stylesheet" href="assets/css/style.css?v=202610232016">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -69,8 +69,8 @@
       <nav class="nav" aria-label="Основное меню">
         <a href="#lasers" data-i18n="nav_lasers">Лазеры</a>
         <a href="#prices" data-i18n="nav_prices">Цены</a>
-        <a href="#course" data-i18n="nav_course">Курс</a>
-        <a href="#prep" data-i18n="nav_prep">Подготовка</a>
+        <a href="#results" data-i18n="nav_results">Результаты</a>
+        <a href="#reviews" data-i18n="nav_reviews">Отзывы</a>
         <a href="#faq" data-i18n="nav_faq">Вопросы</a>
         <a href="#branches" data-i18n="nav_branches">Филиалы</a>
       </nav>
@@ -91,7 +91,8 @@
     <nav>
       <a href="#lasers" data-i18n="nav_lasers">Лазеры</a>
       <a href="#prices" data-i18n="nav_prices">Цены</a>
-      <a href="#course" data-i18n="nav_course">Курс</a>
+      <a href="#results" data-i18n="nav_results">Результаты</a>
+      <a href="#reviews" data-i18n="nav_reviews">Отзывы</a>
       <a href="#prep" data-i18n="nav_prep">Подготовка</a>
       <a href="#faq" data-i18n="nav_faq">Вопросы</a>
       <a href="#branches" data-i18n="nav_branches">Филиалы</a>
@@ -371,6 +372,71 @@
       </div>
     </section>
 
+    <!-- ============ RESULTS ============ -->
+    <section class="section results" id="results">
+      <div class="container">
+        <div class="section__head section__head--split reveal">
+          <div>
+            <p class="kicker" data-i18n="res_kicker">Результаты</p>
+            <h2 class="h2" data-i18n="res_title_html">До и <em>после</em></h2>
+          </div>
+          <p class="section__lead" data-i18n="res_sub">Реальные работы наших мастеров — фото клиентов Laser House. Нажмите на фото, чтобы рассмотреть.</p>
+        </div>
+        <div class="results__wrap reveal">
+          <div class="results__track js-results" role="list">
+          <figure class="result" role="listitem">
+            <button type="button" class="result__open" data-index="0" aria-label="Открыть фото: После 2 процедур">
+              <img src="assets/img/results/result-1-sm.webp" width="540" height="960" loading="lazy" decoding="async" alt="До и после лазерной эпиляции — после 2 процедур">
+            </button>
+            <figcaption data-i18n="res_c1">После 2 процедур</figcaption>
+          </figure>
+          <figure class="result" role="listitem">
+            <button type="button" class="result__open" data-index="1" aria-label="Открыть фото: Подмышки">
+              <img src="assets/img/results/result-2-sm.webp" width="540" height="960" loading="lazy" decoding="async" alt="До и после лазерной эпиляции — подмышки">
+            </button>
+            <figcaption data-i18n="res_c2">Подмышки</figcaption>
+          </figure>
+          <figure class="result" role="listitem">
+            <button type="button" class="result__open" data-index="2" aria-label="Открыть фото: После 1 процедуры">
+              <img src="assets/img/results/result-3-sm.webp" width="540" height="960" loading="lazy" decoding="async" alt="До и после лазерной эпиляции — после 1 процедуры">
+            </button>
+            <figcaption data-i18n="res_c3">После 1 процедуры</figcaption>
+          </figure>
+          <figure class="result" role="listitem">
+            <button type="button" class="result__open" data-index="3" aria-label="Открыть фото: После 5 процедур">
+              <img src="assets/img/results/result-4-sm.webp" width="540" height="960" loading="lazy" decoding="async" alt="До и после лазерной эпиляции — после 5 процедур">
+            </button>
+            <figcaption data-i18n="res_c4">После 5 процедур</figcaption>
+          </figure>
+          <figure class="result" role="listitem">
+            <button type="button" class="result__open" data-index="4" aria-label="Открыть фото: Ноги">
+              <img src="assets/img/results/result-5-sm.webp" width="540" height="960" loading="lazy" decoding="async" alt="До и после лазерной эпиляции — ноги">
+            </button>
+            <figcaption data-i18n="res_c5">Ноги</figcaption>
+          </figure>
+          <figure class="result" role="listitem">
+            <button type="button" class="result__open" data-index="5" aria-label="Открыть фото: Подмышки">
+              <img src="assets/img/results/result-6-sm.webp" width="540" height="960" loading="lazy" decoding="async" alt="До и после лазерной эпиляции — подмышки">
+            </button>
+            <figcaption data-i18n="res_c6">Подмышки</figcaption>
+          </figure>
+          </div>
+          <div class="results__controls">
+            <button type="button" class="round-btn js-res-prev" aria-label="Назад"><svg><use href="#i-arrow"/></svg></button>
+            <button type="button" class="round-btn js-res-next" aria-label="Вперёд"><svg><use href="#i-arrow"/></svg></button>
+          </div>
+        </div>
+        <p class="results__note muted" data-i18n="res_note">Результат индивидуален и зависит от зоны, типа кожи и волос.</p>
+      </div>
+    </section>
+
+    <dialog class="lightbox js-lightbox" aria-label="Фото до и после">
+      <img class="lightbox__img js-lb-img" alt="">
+      <button type="button" class="lightbox__close js-lb-close" aria-label="Закрыть"><svg><use href="#i-x"/></svg></button>
+      <button type="button" class="round-btn lightbox__prev js-lb-prev" aria-label="Назад"><svg><use href="#i-arrow"/></svg></button>
+      <button type="button" class="round-btn lightbox__next js-lb-next" aria-label="Вперёд"><svg><use href="#i-arrow"/></svg></button>
+    </dialog>
+
     <!-- ============ PAIN ============ -->
     <section class="section pain">
       <div class="container">
@@ -439,6 +505,66 @@
           </summary>
           <ul class="contra__list js-contra"></ul>
         </details>
+      </div>
+    </section>
+
+    <!-- ============ REVIEWS ============ -->
+    <section class="section reviews" id="reviews">
+      <div class="container">
+        <div class="section__head section__head--split reveal">
+          <div>
+            <p class="kicker" data-i18n="rev_kicker">Отзывы</p>
+            <h2 class="h2" data-i18n="rev_title_html"><em>5,0</em> — так нас оценивают клиенты</h2>
+          </div>
+          <p class="section__lead" data-i18n="rev_sub">Более 500 оценок на Яндекс Картах и в 2ГИС. Отзывы ниже загружаются напрямую с Яндекс Карт.</p>
+        </div>
+
+        <div class="platforms reveal">
+          <a class="platform platform--ya" href="https://yandex.uz/maps/org/laser_house/193168068338/reviews/" target="_blank" rel="noopener">
+            <span class="platform__name">Яндекс Карты</span>
+            <span class="platform__branch">Ц-1</span>
+            <span class="platform__score">5,0 <i>★★★★★</i></span>
+          </a>
+          <a class="platform platform--ya" href="https://yandex.uz/maps/org/laser_house/62043834093/reviews/" target="_blank" rel="noopener">
+            <span class="platform__name">Яндекс Карты</span>
+            <span class="platform__branch">Нукус</span>
+            <span class="platform__score">5,0 <i>★★★★★</i></span>
+          </a>
+          <a class="platform platform--gis" href="https://2gis.uz/tashkent/firm/70000001089837420/tab/reviews" target="_blank" rel="noopener">
+            <span class="platform__name">2ГИС</span>
+            <span class="platform__branch">Ц-1</span>
+            <span class="platform__score">5,0 <i>★★★★★</i></span>
+          </a>
+          <a class="platform platform--gis" href="https://2gis.uz/tashkent/firm/70000001081124524/tab/reviews" target="_blank" rel="noopener">
+            <span class="platform__name">2ГИС</span>
+            <span class="platform__branch">Нукус</span>
+            <span class="platform__score">5,0 <i>★★★★★</i></span>
+          </a>
+          <a class="platform platform--ig" href="https://www.instagram.com/laserhouse_uz/" target="_blank" rel="noopener">
+            <span class="platform__name">Instagram</span>
+            <span class="platform__branch" data-i18n="rev_ig">Раздел «Отзывы» в актуальном</span>
+            <span class="platform__score">24,5K</span>
+          </a>
+        </div>
+
+        <div class="ywidget reveal">
+          <div class="ywidget__side">
+            <p class="kicker" data-i18n="rev_ya">Яндекс Карты</p>
+            <div class="ywidget__tabs" role="tablist">
+              <button type="button" role="tab" class="ywidget__tab is-active" aria-selected="true" data-org="193168068338" data-url="https://yandex.uz/maps/org/laser_house/193168068338/reviews/">
+                <b>Ц-1</b><span data-i18n="rev_tab1">Буюк Ипак Йули, 13</span>
+              </button>
+              <button type="button" role="tab" class="ywidget__tab" aria-selected="false" data-org="62043834093" data-url="https://yandex.uz/maps/org/laser_house/62043834093/reviews/">
+                <b data-i18n="br2_name">Нукус</b><span data-i18n="rev_tab2">Нукус, 72/2</span>
+              </button>
+            </div>
+            <p class="ywidget__note" data-i18n="rev_note">Отзывы загружаются с Яндекс Карт и обновляются сами, когда клиенты оставляют новые.</p>
+            <a class="btn btn--ghost btn--sm js-yall" href="https://yandex.uz/maps/org/laser_house/193168068338/reviews/" target="_blank" rel="noopener"><span data-i18n="rev_all">Все отзывы на Яндекс Картах</span><svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </div>
+          <div class="ywidget__frame js-ywidget" data-org="193168068338">
+            <p class="ywidget__loading" data-i18n="rev_loading">Загружаем отзывы с Яндекс Карт…</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -556,6 +682,8 @@
         <p class="footer__title" data-i18n="footer_nav">Навигация</p>
         <a href="#lasers" data-i18n="nav_lasers">Лазеры</a>
         <a href="#prices" data-i18n="nav_prices">Цены</a>
+        <a href="#results" data-i18n="nav_results">Результаты</a>
+        <a href="#reviews" data-i18n="nav_reviews">Отзывы</a>
         <a href="#prep" data-i18n="nav_prep">Подготовка</a>
         <a href="#faq" data-i18n="nav_faq">Вопросы</a>
         <a href="#branches" data-i18n="nav_branches">Филиалы</a>
@@ -581,7 +709,7 @@
     <a class="btn btn--primary mbar__book js-book" href="https://t.me/LaserHouseuzbot?start=book" target="_blank" rel="noopener" data-i18n="bar_book">Записаться</a>
   </div>
 
-  <script src="assets/js/data.js?v=202610231408"></script>
-  <script src="assets/js/main.js?v=202610231408"></script>
+  <script src="assets/js/data.js?v=202610232016"></script>
+  <script src="assets/js/main.js?v=202610232016"></script>
 </body>
 </html>
