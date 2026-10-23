@@ -1,6 +1,7 @@
 /* Laser House — подарочные сертификаты.
    Реестр — Google Таблица со скриптом google-apps-script/Code.gs (веб-приложение).
-   Переменные: SHEETS_URL — ссылка веб-приложения (…/exec), SHEETS_SECRET — общий секрет со скриптом.
+   Переменные: SHEETS_URL — ссылка веб-приложения (…/exec), SHEETS_SECRET — общий секрет со скриптом,
+   SHEETS_VIEW_URL — ссылка на саму таблицу для кнопки «Открыть таблицу» у админов.
    Файл с «_» в начале Vercel не превращает в отдельную функцию — это модуль для api/bot.js.
 
    Базы данных у бота нет: ход мастера «Создать сертификат» хранится прямо в сообщениях бота —
@@ -49,6 +50,8 @@ module.exports = function createCerts(d) {
 
   /* ---------- Google Таблица ---------- */
   const sheetsReady = () => Boolean(process.env.SHEETS_URL && process.env.SHEETS_SECRET);
+  // кнопка-ссылка на таблицу — только в сообщениях админам
+  const sheetRow = () => (process.env.SHEETS_VIEW_URL ? [[{ text: '📊 Открыть таблицу', url: process.env.SHEETS_VIEW_URL }]] : []);
 
   async function sheets(action, payload = {}) {
     if (!sheetsReady()) throw new Error('таблица сертификатов не подключена');
@@ -243,7 +246,7 @@ module.exports = function createCerts(d) {
     let sentToClient = false;
     if (c.buyerTg) sentToClient = (await sendTo(c.buyerTg, card)).ok;
     await editOrSend(ctx, `✅ <b>Сертификат создан</b> и записан в таблицу: <code>${c.code}</code>${draftLines({ ...w, t: undefined })}\n\n${sentToClient ? 'Карточка отправлена клиенту в бот.' : 'Перешлите клиенту карточку ниже 👇'}`,
-      { inline_keyboard: [[d.btn('Открыть сертификат', `R:${c.code}:view`)]] });
+      { inline_keyboard: [[d.btn('Открыть сертификат', `R:${c.code}:view`)], ...sheetRow()] });
     await sendTo(ctx.chatId, card);
   }
 
@@ -281,6 +284,7 @@ module.exports = function createCerts(d) {
       rows.push([d.btn('⛔ Аннулировать', `R:${c.code}:void`)]);
     }
     rows.push([d.btn('🔄 Обновить', `R:${c.code}:view`), d.btn('📋 Последние', 'A:list')]);
+    rows.push(...sheetRow());
     return { inline_keyboard: rows };
   }
 
@@ -326,7 +330,7 @@ module.exports = function createCerts(d) {
 
   async function listRecent(ctx) {
     const list = await sheets('list', { limit: 12 });
-    if (!list.length) return sendTo(ctx.chatId, 'В таблице пока нет сертификатов.', { inline_keyboard: [[d.btn('➕ Создать сертификат', 'W:new')]] });
+    if (!list.length) return sendTo(ctx.chatId, 'В таблице пока нет сертификатов.', { inline_keyboard: [[d.btn('➕ Создать сертификат', 'W:new')], ...sheetRow()] });
     const lines = ['📋 <b>Последние сертификаты</b>', ''];
     list.forEach((c) => {
       const st = statusOf(c);
@@ -334,7 +338,7 @@ module.exports = function createCerts(d) {
       lines.push(`${ICON[st]} <code>${c.code}</code> — ${val} · ${d.esc(c.buyer || '—')} · до ${fmtDate(c.expires)}`);
     });
     const rows = list.map((c) => [d.btn(`${ICON[statusOf(c)]} ${c.code}`, `R:${c.code}:view`)]);
-    rows.push([d.btn('➕ Создать сертификат', 'W:new')]);
+    rows.push([d.btn('➕ Создать сертификат', 'W:new')], ...sheetRow());
     return sendTo(ctx.chatId, lines.join('\n'), { inline_keyboard: rows });
   }
 
@@ -345,8 +349,8 @@ module.exports = function createCerts(d) {
       '• <b>Создать</b> — кнопка ниже или /create. Бот спросит номинал, формат, покупателя, телефон и получателя, создаст код и запишет строку в таблицу.\n' +
       '• Заказ клиента из бота приходит с кнопкой «Оплачено — создать сертификат» — данные подставятся сами.\n' +
       '• <b>Проверить или погасить</b> — просто отправьте боту код, например <code>LH-7K3M-Q9TX</code>.\n' +
-      '• /certs — последние сертификаты.',
-      { inline_keyboard: [[d.btn('➕ Создать сертификат', 'W:new'), d.btn('📋 Последние', 'A:list')]] });
+      '• /certs — последние сертификаты, /sheet — открыть таблицу.',
+      { inline_keyboard: [[d.btn('➕ Создать сертификат', 'W:new'), d.btn('📋 Последние', 'A:list')], ...sheetRow()] });
   }
 
   /* ---------- текст от админа ---------- */
@@ -354,6 +358,11 @@ module.exports = function createCerts(d) {
     if (!isAdmin(ctx.from.id)) return false;
     try {
       if (/^\/(admin|certhelp)\b/.test(text)) { await adminHelp(ctx); return true; }
+      if (/^\/(sheet|table)\b/.test(text)) {
+        if (process.env.SHEETS_VIEW_URL) await sendTo(ctx.chatId, '📊 Реестр сертификатов в Google Таблице:', { inline_keyboard: sheetRow() });
+        else await sendTo(ctx.chatId, 'Ссылка на таблицу не настроена (SHEETS_VIEW_URL).');
+        return true;
+      }
       if (!sheetsReady()) {
         if (/^\/(create|certs)\b/.test(text)) { await adminHelp(ctx); return true; }
         return false;

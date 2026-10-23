@@ -25,6 +25,6 @@ npx http-server -p 5173 -c-1
 ## Telegram-бот и сертификаты
 
 - Бот: `api/bot.js` (Vercel-функция по вебхуку), модуль сертификатов: `api/_certs.js`.
-- Переменные в Vercel: `TELEGRAM_BOT_TOKEN`, `WEBHOOK_SECRET`, `ADMIN_CHAT_ID` (id админов через запятую), `SHEETS_URL`, `SHEETS_SECRET`, опционально `CERT_VALID_MONTHS` (по умолчанию 12).
+- Переменные в Vercel: `TELEGRAM_BOT_TOKEN`, `WEBHOOK_SECRET`, `ADMIN_CHAT_ID` (id админов через запятую), `SHEETS_URL`, `SHEETS_SECRET`, `SHEETS_VIEW_URL` (ссылка на таблицу для кнопки у админов), опционально `CERT_VALID_MONTHS` (по умолчанию 12).
 - Реестр сертификатов — Google Таблица со скриптом `google-apps-script/Code.gs` (веб-приложение). Секрет в скрипте должен совпадать с `SHEETS_SECRET`.
-- Админ: `/create` — создать сертификат, отправить боту код — проверить/погасить, `/certs` — последние.
+- Админ: `/create` — создать сертификат, отправить боту код — проверить/погасить, `/certs` — последние, `/sheet` — открыть таблицу.
