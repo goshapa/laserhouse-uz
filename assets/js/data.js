@@ -8,7 +8,7 @@ LH.links = {
   booking: 'https://n1237691.alteg.io/select-city/572/select-branch',
   telegram: 'https://t.me/laserhouse_uz',
   // username Telegram-бота без @. Пока пусто — кнопки ведут на онлайн-запись Altegio и в Telegram студии
-  bot: '',
+  bot: 'LaserHouseuzbot',
   instagram: 'https://www.instagram.com/laserhouse_uz/',
   phone: '+998940000048',
   phoneLabel: '+998 94 000-00-48'
