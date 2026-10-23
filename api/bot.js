@@ -260,6 +260,10 @@ const homeRow = (l) => [btn(T[L(l)].b_menu, `m:${l}:menu`)];
 const branchName = (b, lang) => (BRANCHES[b] ? `${BRANCHES[b][lang].name}, ${BRANCHES[b][lang].addr}` : '');
 const certs = require('./_certs')({ tg, esc, money, btn, adminChats, userLink, branchName, homeRow });
 
+/* ---------- ИИ-администратор: личка @laserhouse_uz (Telegram Business) и Instagram (api/ig.js) ---------- */
+const store = require('./_store');
+const agent = require('./_agent')({ LH, BRANCHES, priceText, T, notifyAdmins, esc });
+
 /* ---------- запись ----------
    Состояние: l.c.b.x.d.m.q.g.k.w
    l язык (r/u), c город (t/s), b студия (1/2/3), x для кого (w/m), d аппарат (a/k/h/x),
@@ -663,6 +667,33 @@ async function handleMessage(msg) {
   return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
 }
 
+/* Сообщение в личке бизнес-аккаунта (бот подключён в Настройки → Telegram для бизнеса → Чат-боты).
+   В личном чате chat.id = id клиента; если from другой — это написал сам владелец аккаунта. */
+async function handleBusinessMessage(msg) {
+  if (msg.chat.type !== 'private' || msg.sender_business_bot) return null; // наши же ответы
+  const fromOwner = msg.from && msg.from.id !== msg.chat.id;
+  if (fromOwner) return agent.pause('tg', msg.chat.id);
+
+  const text = (msg.text || msg.caption || '').trim();
+  if (!text) return null; // голосовые, стикеры, фото без подписи — отвечает человек
+  if (!agent.enabled() || await agent.isPaused('tg', msg.chat.id)) return null;
+  const who = { channel: 'tg', chatId: msg.chat.id, label: userLink(msg.from || {}) };
+  await tg('sendChatAction', { business_connection_id: msg.business_connection_id, chat_id: msg.chat.id, action: 'typing' });
+  let answer = null;
+  try {
+    answer = await agent.reply(who, text);
+  } catch (e) {
+    console.error('[agent] tg reply failed', e);
+  }
+  if (!answer) return null;
+  return tg('sendMessage', {
+    business_connection_id: msg.business_connection_id,
+    chat_id: msg.chat.id,
+    text: answer.slice(0, 4000),
+    disable_web_page_preview: true
+  });
+}
+
 async function handleCallback(cq) {
   const ctx = { chatId: cq.message.chat.id, messageId: cq.message.message_id, message: cq.message, from: cq.from, lang: 'ru' };
   const data = cq.data || '';
@@ -689,7 +720,7 @@ async function setup(req) {
   results.webhook = await tg('setWebhook', {
     url: `https://${host}/api/bot`,
     secret_token: secret,
-    allowed_updates: ['message', 'callback_query'],
+    allowed_updates: ['message', 'callback_query', 'business_connection', 'business_message'],
     drop_pending_updates: true
   });
   for (const [lang, code] of [['ru', undefined], ['uz', 'uz']]) {
@@ -776,8 +807,18 @@ module.exports = async (req, res) => {
 
   const update = req.body || {};
   try {
+    // Telegram повторяет апдейт, если ответ ИИ шёл дольше обычного — второй раз не обрабатываем
+    if (update.update_id != null && !(await store.once(`tg:u:${update.update_id}`, 3600).catch(() => true))) {
+      return res.status(200).json({ ok: true });
+    }
     if (update.callback_query) await handleCallback(update.callback_query);
     else if (update.message) await handleMessage(update.message);
+    else if (update.business_message) await handleBusinessMessage(update.business_message);
+    else if (update.business_connection) {
+      const c = update.business_connection;
+      console.log(`[bot] business connection ${c.is_enabled ? 'on' : 'off'} by ${c.user && c.user.id}, can_reply=${!!(c.rights && c.rights.can_reply)}`);
+      if (c.is_enabled) await notifyAdmins(`🤖 ИИ-администратор подключён к Telegram-аккаунту ${userLink(c.user || {})}. Он будет отвечать клиентам в личке.`);
+    }
   } catch (e) {
     console.error('[bot] update failed', e);
   }
@@ -785,4 +826,4 @@ module.exports = async (req, res) => {
   return res.status(200).json({ ok: true });
 };
 
-module.exports._internal = { handleMessage, handleCallback, parseBook, bookBack, priceText, T };
+module.exports._internal = { handleMessage, handleCallback, handleBusinessMessage, parseBook, bookBack, priceText, T, agent, notifyAdmins, esc };

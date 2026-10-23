@@ -1,0 +1,8 @@
+{
+  "name": "laserhouse-uz",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.2.0"
+  }
+}

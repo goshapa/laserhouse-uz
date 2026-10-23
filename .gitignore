@@ -1,5 +1,6 @@
 
 .claude/
+.env*
 .vercel
 .vercel/
 node_modules/

@@ -2,7 +2,11 @@
   "functions": {
     "api/bot.js": {
       "includeFiles": "assets/js/data.js",
-      "maxDuration": 10
+      "maxDuration": 60
+    },
+    "api/ig.js": {
+      "includeFiles": "assets/js/data.js",
+      "maxDuration": 60
     }
   },
   "headers": [
