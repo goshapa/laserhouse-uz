@@ -70,6 +70,7 @@ const T = {
     b_branches: '📍 Филиалы и контакты', b_lasers: '⚡ Наши аппараты', b_prep: '📋 Подготовка',
     b_faq: '❓ Частые вопросы', b_admin: '💬 Написать администратору', b_lang: '🇺🇿 O‘zbek tili',
     b_menu: '🏠 Главное меню', b_back: '← Назад', b_site: '🌐 Открыть сайт',
+    b_mycerts: '🎁 Мои сертификаты', b_adm: '🛠 Сертификаты · для администраторов',
 
     book_city: '📅 <b>Запись на процедуру</b>\n\nВ каком городе вам удобно?',
     city_t: 'Ташкент', city_s: 'Самарканд',
@@ -128,6 +129,7 @@ const T = {
     b_branches: '📍 Filiallar va kontaktlar', b_lasers: '⚡ Apparatlarimiz', b_prep: '📋 Tayyorgarlik',
     b_faq: '❓ Ko‘p beriladigan savollar', b_admin: '💬 Administratorga yozish', b_lang: '🇷🇺 Русский язык',
     b_menu: '🏠 Bosh menyu', b_back: '← Orqaga', b_site: '🌐 Saytni ochish',
+    b_mycerts: '🎁 Mening sertifikatlarim', b_adm: '🛠 Sertifikatlar · administratorlar uchun',
 
     book_city: '📅 <b>Muolajaga yozilish</b>\n\nQaysi shaharda qulay?',
     city_t: 'Toshkent', city_s: 'Samarqand',
@@ -240,9 +242,10 @@ async function askPhone(ctx) {
 }
 
 /* ---------- главное меню ---------- */
-function menuRows(l) {
+function menuRows(l, admin) {
   const t = T[L(l)];
   return [
+    ...(admin ? [[btn(t.b_adm, 'A:menu')]] : []),
     [btn(t.b_book, `B:${l}`)],
     [btn(t.b_prices, `m:${l}:prices`), btn(t.b_cert, `C:${l}`)],
     [btn(t.b_branches, `m:${l}:branches`), btn(t.b_lasers, `m:${l}:lasers`)],
@@ -252,6 +255,10 @@ function menuRows(l) {
   ];
 }
 const homeRow = (l) => [btn(T[L(l)].b_menu, `m:${l}:menu`)];
+
+/* ---------- сертификаты: выдача, проверка, погашение (api/_certs.js) ---------- */
+const branchName = (b, lang) => (BRANCHES[b] ? `${BRANCHES[b][lang].name}, ${BRANCHES[b][lang].addr}` : '');
+const certs = require('./_certs')({ tg, esc, money, btn, adminChats, userLink, branchName, homeRow });
 
 /* ---------- запись ----------
    Состояние: l.c.b.x.d.m.q.g.k.w
@@ -474,7 +481,8 @@ async function handleCert(ctx, data) {
     else s.n = '-';
   }
   if (act === 'send') {
-    await notifyAdmins(`🎁 <b>Заказ сертификата</b>\n\nКлиент: ${userLink(ctx.from)}\n${certSummary(s, 'ru')}\nЯзык: ${ctx.lang === 'uz' ? 'узбекский' : 'русский'}`);
+    await certs.notifyOrder(ctx.from, { n: s.n, f: s.f, b: s.b, lang: ctx.lang },
+      `🎁 <b>Заказ сертификата</b>\n\nКлиент: ${userLink(ctx.from)}\n${certSummary(s, 'ru')}\nЯзык: ${ctx.lang === 'uz' ? 'узбекский' : 'русский'}`);
     await show(ctx, `${t.cert_done}\n\n${certSummary(s, ctx.lang)}`, [homeRow(s.l)]);
     return askPhone(ctx);
   }
@@ -487,6 +495,7 @@ async function handleCert(ctx, data) {
       [btn(NOMINALS[1][ctx.lang], certCb({ ...s, n: '1' })), btn(NOMINALS[2][ctx.lang], certCb({ ...s, n: '2' }))],
       [btn(NOMINALS[3][ctx.lang], certCb({ ...s, n: '3' })), btn(NOMINALS[4][ctx.lang], certCb({ ...s, n: '4' }))],
       [btn(NOMINALS[5][ctx.lang], certCb({ ...s, n: '5' })), btn(NOMINALS[6][ctx.lang], certCb({ ...s, n: '6' }))],
+      [btn(t.b_mycerts, `m:${s.l}:mycerts`)],
       homeRow(s.l)
     ]);
   }
@@ -584,8 +593,11 @@ async function handleMenu(ctx, data) {
       }
       return show(ctx, t.faq_pick, [...LH.faq.map((f, i) => [btn(f.q[ctx.lang], `m:${l}:faq:${i}`)]), homeRow(l)]);
 
+    case 'mycerts':
+      return certs.showMine(ctx, l, show);
+
     default:
-      return show(ctx, t.menu, menuRows(l));
+      return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
   }
 }
 
@@ -606,12 +618,15 @@ async function handleMessage(msg) {
   if (msg.contact) {
     await notifyAdmins(`📱 <b>Номер телефона</b>\n\nКлиент: ${userLink(ctx.from)}\nТелефон: <b>${esc(msg.contact.phone_number)}</b>`);
     await tg('sendMessage', { chat_id: ctx.chatId, text: t.phone_thanks, reply_markup: removeKb });
-    return show(ctx, t.menu, menuRows(l));
+    return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
   }
   if (text === T.ru.b_no_phone || text === T.uz.b_no_phone) {
     await tg('sendMessage', { chat_id: ctx.chatId, text: t.no_phone_ok, reply_markup: removeKb });
-    return show(ctx, t.menu, menuRows(l));
+    return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
   }
+
+  // админ: код сертификата, ввод номинала/суммы, /certs, /cancel
+  if (await certs.handleAdminText(ctx, text)) return null;
 
   // в логах Vercel видно, с какой командой пришёл клиент (например, /start cert с сайта)
   if (text.startsWith('/')) console.log(`[bot] command from ${ctx.from.id}: ${text.slice(0, 40)}`);
@@ -626,6 +641,7 @@ async function handleMessage(msg) {
     }
     if (cmd === 'cert' || cmd === 'certificate') return handleCert(ctx, `C:${l}`);
     if (cmd === 'prices') return handleMenu(ctx, `m:${l}:prices`);
+    if (cmd === 'mycerts') return handleMenu(ctx, `m:${l}:mycerts`);
     if (cmd === 'branches') return handleMenu(ctx, `m:${l}:branches`);
     return handleMenu(ctx, `m:${l}:menu`);
   }
@@ -635,7 +651,7 @@ async function handleMessage(msg) {
     await notifyAdmins(`💬 <b>Сообщение от клиента</b>\n\nКлиент: ${userLink(ctx.from)}\n\n${esc(text)}`);
     await tg('sendMessage', { chat_id: ctx.chatId, text: t.text_fwd });
   }
-  return show(ctx, t.menu, menuRows(l));
+  return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
 }
 
 async function handleCallback(cq) {
@@ -643,7 +659,8 @@ async function handleCallback(cq) {
   const data = cq.data || '';
   let res;
   try {
-    if (data.startsWith('B:')) res = await handleBook(ctx, data);
+    if (/^[IXRA]:/.test(data)) res = await certs.handleCallback(ctx, data);
+    else if (data.startsWith('B:')) res = await handleBook(ctx, data);
     else if (data.startsWith('C:')) res = await handleCert(ctx, data);
     else res = await handleMenu(ctx, data.startsWith('m:') ? data : 'm:r:menu');
   } finally {
@@ -675,7 +692,8 @@ async function setup(req) {
         { command: 'book', description: t.b_book.replace(/^\S+\s/, '') },
         { command: 'prices', description: t.b_prices.replace(/^\S+\s/, '') },
         { command: 'cert', description: t.b_cert.replace(/^\S+\s/, '') },
-        { command: 'branches', description: t.b_branches.replace(/^\S+\s/, '') }
+        { command: 'branches', description: t.b_branches.replace(/^\S+\s/, '') },
+        { command: 'mycerts', description: t.b_mycerts.replace(/^\S+\s/, '') }
       ],
       ...extra
     });
