@@ -1,5 +1,6 @@
+
 .claude/
+.vercel
 .vercel/
 node_modules/
-
-.vercel
+secrets/

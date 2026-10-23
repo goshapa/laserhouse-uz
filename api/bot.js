@@ -625,8 +625,8 @@ async function handleMessage(msg) {
     return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
   }
 
-  // админ: код сертификата, ввод номинала/суммы, /certs, /cancel
-  if (await certs.handleAdminText(ctx, text)) return null;
+  // админ: код сертификата, ответы мастеру «Создать сертификат», /create, /certs
+  if (await certs.handleAdminText(ctx, text, msg)) return null;
 
   // в логах Vercel видно, с какой командой пришёл клиент (например, /start cert с сайта)
   if (text.startsWith('/')) console.log(`[bot] command from ${ctx.from.id}: ${text.slice(0, 40)}`);
@@ -646,6 +646,15 @@ async function handleMessage(msg) {
     return handleMenu(ctx, `m:${l}:menu`);
   }
 
+  // админ написал не в ответ на вопрос бота — не пересылаем это как сообщение клиента
+  if (text && !text.startsWith('/') && certs.isAdmin(ctx.from.id)) {
+    await tg('sendMessage', {
+      chat_id: ctx.chatId,
+      text: 'Сообщение никуда не отправлено. Чтобы ответить на вопрос бота, нажмите на его сообщение → «Ответить». Код сертификата можно просто прислать. Меню — /start'
+    });
+    return null;
+  }
+
   // свободный текст — пересылаем администраторам
   if (text) {
     await notifyAdmins(`💬 <b>Сообщение от клиента</b>\n\nКлиент: ${userLink(ctx.from)}\n\n${esc(text)}`);
@@ -655,11 +664,11 @@ async function handleMessage(msg) {
 }
 
 async function handleCallback(cq) {
-  const ctx = { chatId: cq.message.chat.id, messageId: cq.message.message_id, from: cq.from, lang: 'ru' };
+  const ctx = { chatId: cq.message.chat.id, messageId: cq.message.message_id, message: cq.message, from: cq.from, lang: 'ru' };
   const data = cq.data || '';
   let res;
   try {
-    if (/^[IXRA]:/.test(data)) res = await certs.handleCallback(ctx, data);
+    if (/^[RAW]:/.test(data)) res = await certs.handleCallback(ctx, data);
     else if (data.startsWith('B:')) res = await handleBook(ctx, data);
     else if (data.startsWith('C:')) res = await handleCert(ctx, data);
     else res = await handleMenu(ctx, data.startsWith('m:') ? data : 'm:r:menu');
@@ -733,9 +742,9 @@ module.exports = async (req, res) => {
     if (secret && req.query && req.query.check === secret) {
       const out = {};
       try {
-        out.certificates_db = certs.dbReady() ? `connected: ${await certs._redis('PING')}` : 'not connected';
+        out.certificates_sheet = certs.sheetsReady() ? `connected: ${await certs._sheets('ping')}` : 'not connected';
       } catch (e) {
-        out.certificates_db = 'error: ' + e.message;
+        out.certificates_sheet = 'error: ' + e.message;
       }
       for (const id of adminChats()) {
         const c = await tg('getChat', { chat_id: id });
