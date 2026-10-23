@@ -732,6 +732,11 @@ module.exports = async (req, res) => {
     // проверка связи с админами без перенастройки вебхука; &test=1 — отправить тестовую заявку
     if (secret && req.query && req.query.check === secret) {
       const out = {};
+      try {
+        out.certificates_db = certs.dbReady() ? `connected: ${await certs._redis('PING')}` : 'not connected';
+      } catch (e) {
+        out.certificates_db = 'error: ' + e.message;
+      }
       for (const id of adminChats()) {
         const c = await tg('getChat', { chat_id: id });
         out[id] = { reachable: c.ok ? [c.result.first_name, c.result.last_name].filter(Boolean).join(' ') : c.description };
