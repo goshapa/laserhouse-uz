@@ -15,6 +15,7 @@
       dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
       men_note: 'Мужская лазерная эпиляция — на Candela GentleLase Pro-U. Цены указаны с учётом скидки.',
       no_discount: 'Без скидки', you_save: 'выгода',
+      sale_note: 'Цены указаны с учётом скидки.',
       quiz: {
         alex: { name: 'Candela GentleLase Pro-U', why: 'Золотой стандарт лазерной эпиляции. Подходит для вашего типа кожи и волос, быстро обрабатывает даже большие зоны, а первые результаты видны уже после первой процедуры.' },
         deka: { name: 'DEKA Motus PRO', why: 'Итальянская платформа с александритовым и неодимовым лазерами — работает с вашим типом кожи и волос. Технология Moveo и современное охлаждение делают процедуру мягкой и комфортной.' },
@@ -30,6 +31,7 @@
       dev_alex_case: 'Candela', dev_diode_case: 'HairBoss',
       men_note: 'Erkaklar lazer epilyatsiyasi — Candela GentleLase Pro-U’da. Narxlar chegirma bilan ko‘rsatilgan.',
       no_discount: 'Chegirmasiz', you_save: 'foyda',
+      sale_note: 'Narxlar chegirma bilan ko‘rsatilgan.',
       quiz: {
         alex: { name: 'Candela GentleLase Pro-U', why: 'Lazer epilyatsiyasining oltin standarti. Teringiz va tuklaringiz turiga mos keladi, katta zonalarga ham tez ishlov beradi, birinchi natija esa birinchi muolajadan keyinoq ko‘rinadi.' },
         deka: { name: 'DEKA Motus PRO', why: 'Aleksandrit va neodim lazerli italyan platformasi — teringiz va tuklaringiz turi bilan ishlaydi. Moveo texnologiyasi va zamonaviy sovutish muolajani yumshoq va qulay qiladi.' },
@@ -106,9 +108,10 @@
 
   const currentList = () => LH.prices[calc.sex][calc.device];
   const priceMap = (sex, device) => new Map((LH.prices[sex][device] || []).map((r) => [r[0], r]));
-  // у мужского прайса свои разделы (5-й элемент строки), у женского — общие из LH.zones
+  // прайс-листы студии (Candela / DEKA) идут со своими разделами — 5-й элемент строки
   const groupOf = (row) => row[4] || LH.zones[row[0]].g;
-  const groupsFor = () => (calc.sex === 'men' ? [LH.groups[0], ...LH.menGroups] : LH.groups);
+  const isSheet = () => currentList().some((r) => r[4]);
+  const groupsFor = () => (isSheet() ? [LH.groups[0], ...LH.sheetGroups] : LH.groups);
 
   function renderFilters() {
     const list = currentList();
@@ -122,8 +125,8 @@
         return `<button type="button" role="tab" class="filter${calc.filter === g.id ? ' is-active' : ''}" data-g="${g.id}">${g[lang]}${n ? `<sup>${n}</sup>` : ''}</button>`;
       }).join('');
     const note = $('.js-calc-note');
-    note.hidden = calc.sex !== 'men';
-    note.textContent = t('men_note');
+    note.hidden = !isSheet();
+    note.textContent = calc.sex === 'men' ? t('men_note') : t('sale_note');
   }
 
   function fmtTime(m) {
@@ -134,21 +137,22 @@
 
   function renderZones() {
     let list = currentList().filter((r) => calc.filter === 'all' || groupOf(r) === calc.filter);
-    if (calc.sex !== 'men') {
-      // женский прайс: по разделам, «Всё тело» первым
+    const sheet = isSheet();
+    if (!sheet) {
+      // диод: по разделам, «Всё тело» первым
       list = list.slice().sort((a, b) => groupOrder.indexOf(groupOf(a)) - groupOrder.indexOf(groupOf(b)));
       list.sort((a, b) => (b[0] === 'body_all') - (a[0] === 'body_all'));
     }
-    const groupName = (id) => (LH.menGroups.find((g) => g.id === id) || {})[lang];
+    const groupName = (id) => (LH.sheetGroups.find((g) => g.id === id) || {})[lang];
 
-    // мужской прайс — одной колонкой, как лист прайса студии
-    $('.js-zones').classList.toggle('calc__list--single', calc.sex === 'men');
+    // прайс-лист студии — одной колонкой, как на листе
+    $('.js-zones').classList.toggle('calc__list--single', sheet);
     let prevGroup = null;
     $('.js-zones').innerHTML = list.map(([key, mins, price, old, group]) => {
       const on = calc.selected.has(key);
       const complex = key === 'body_all';
-      // мужской прайс: заголовки разделов, как в прайсе студии
-      const head = calc.sex === 'men' && calc.filter === 'all' && group !== prevGroup && group !== 'complex'
+      // заголовки разделов, как в прайсе студии
+      const head = sheet && calc.filter === 'all' && group !== prevGroup && group !== 'complex'
         ? `<p class="zone-group">${groupName(group)}</p>` : '';
       prevGroup = group;
       return `${head}<button type="button" role="listitem" class="zone${on ? ' is-on' : ''}${complex ? ' zone--complex' : ''}" data-key="${key}" aria-pressed="${on}">

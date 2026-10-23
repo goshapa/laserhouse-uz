@@ -63,8 +63,8 @@ LH.groups = [
   { id: 'complex', ru: 'Комплекс',    uz: 'Kompleks' }
 ];
 
-/* Разделы мужского прайса — как в прайсе студии */
-LH.menGroups = [
+/* Разделы прайс-листов студии (Candela / DEKA) */
+LH.sheetGroups = [
   { id: 'm_face',   ru: 'Лицо',             uz: 'Yuz' },
   { id: 'm_neck',   ru: 'Шея',              uz: 'Bo‘yin' },
   { id: 'm_chest',  ru: 'Грудь',            uz: 'Ko‘krak' },
@@ -88,15 +88,28 @@ LH.prices = {
       ['back', 20, 350000], ['lower_back', 10, 220000], ['buttocks', 20, 330000], ['legs_full', 30, 390000],
       ['legs_half', 25, 300000], ['toes', 5, 100000], ['bikini_deep', 20, 330000], ['bikini_classic', 20, 290000]
     ],
+    /* DEKA / Candela (александрит). Порядок и разделы — как в прайсе студии.
+       Формат: [зона, минуты, цена со скидкой, цена без скидки, раздел] */
     alex: [
-      ['body_all', 210, 2890000], ['face_full', 20, 450000], ['lip', 20, 200000], ['chin', 20, 150000],
-      ['cheeks', 20, 200000], ['forehead', 20, 200000], ['sideburns', 20, 200000], ['neck_full', 20, 200000],
-      ['neck_front', 20, 150000], ['neck_back', 20, 150000], ['armpits', 20, 250000], ['shoulders', 20, 300000],
-      ['arms_full', 30, 490000], ['arms_upper', 30, 300000], ['arms_lower', 30, 300000], ['hands', 20, 170000],
-      ['fingers', 15, 70000], ['chest_full', 30, 350000], ['decollete', 20, 200000], ['areolas', 20, 150000],
-      ['belly_full', 30, 390000], ['line_navel_chest', 20, 150000], ['line_pubis_navel', 20, 150000], ['back', 30, 450000],
-      ['lower_back', 20, 175000], ['buttocks', 30, 400000], ['legs_full', 40, 890000], ['legs_half', 40, 600000],
-      ['toes', 20, 70000], ['bikini_deep', 30, 450000], ['bikini_classic', 30, 350000]
+      ['face_full', 20, 450000, 600000, 'm_face'], ['cheeks', 20, 200000, 300000, 'm_face'],
+      ['forehead', 20, 200000, 300000, 'm_face'], ['lip_m', 20, 200000, 300000, 'm_face'],
+      ['chin', 20, 150000, 200000, 'm_face'], ['sideburns', 20, 200000, 300000, 'm_face'],
+      ['neck_full', 20, 200000, 300000, 'm_neck'], ['neck_front', 20, 150000, 250000, 'm_neck'],
+      ['neck_back', 20, 150000, 250000, 'm_neck'],
+      ['areolas', 20, 150000, 250000, 'm_chest'], ['decollete', 20, 200000, 300000, 'm_chest'],
+      ['chest_full', 30, 350000, 500000, 'm_chest'],
+      ['bikini_classic', 30, 350000, 500000, 'm_bikini'], ['bikini_deep', 30, 450000, 600000, 'm_bikini'],
+      ['arms_full', 30, 490000, 650000, 'm_arms'], ['arms_upper', 30, 300000, 500000, 'm_arms'],
+      ['arms_lower', 30, 300000, 500000, 'm_arms'], ['shoulders', 20, 300000, 500000, 'm_arms'],
+      ['armpits', 20, 250000, 300000, 'm_arms'], ['fingers', 15, 70000, 100000, 'm_arms'],
+      ['hands', 20, 170000, 200000, 'm_arms'],
+      ['legs_full', 40, 890000, 1000000, 'm_legs'], ['legs_half', 40, 600000, 800000, 'm_legs'],
+      ['toes', 20, 70000, 100000, 'm_legs'],
+      ['belly_full', 30, 390000, 500000, 'm_belly'], ['line_pubis_navel', 20, 150000, 200000, 'm_belly'],
+      ['line_navel_chest', 20, 150000, 200000, 'm_belly'],
+      ['lower_back', 20, 175000, 300000, 'm_back'], ['back', 30, 450000, 550000, 'm_back'],
+      ['buttocks', 30, 400000, 500000, 'm_back'],
+      ['body_all', 210, 2890000, 4200000, 'complex']
     ]
   },
   men: {
