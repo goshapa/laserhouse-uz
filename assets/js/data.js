@@ -5,7 +5,7 @@
 window.LH = window.LH || {};
 
 LH.links = {
-  booking: 'https://n1237691.alteg.io/select-city/572/select-branch',
+  booking: 'https://t.me/LaserHouseuzbot?start=book',
   telegram: 'https://t.me/laserhouse_uz',
   // username Telegram-бота без @. Пока пусто — кнопки ведут на онлайн-запись Altegio и в Telegram студии
   bot: 'LaserHouseuzbot',
