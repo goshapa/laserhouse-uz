@@ -582,6 +582,8 @@ async function setup(req) {
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   const secret = process.env.WEBHOOK_SECRET;
   const results = {};
+  const me = await tg('getMe', {});
+  results.bot = me.ok ? { username: me.result.username, name: me.result.first_name } : me;
   results.webhook = await tg('setWebhook', {
     url: `https://${host}/api/bot`,
     secret_token: secret,
@@ -612,6 +614,11 @@ async function setup(req) {
       ...extra
     });
   }
+  const info = await tg('getWebhookInfo', {});
+  results.webhook_info = info.ok
+    ? { url: info.result.url, pending: info.result.pending_update_count, last_error: info.result.last_error_message || null }
+    : info;
+  results.admin_chat_configured = Boolean(process.env.ADMIN_CHAT_ID);
   return results;
 }
 
