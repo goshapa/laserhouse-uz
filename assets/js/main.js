@@ -58,6 +58,23 @@
   $$('.js-tg').forEach((a) => { a.href = LH.links.telegram; });
   $$('.js-ig').forEach((a) => { a.href = LH.links.instagram; });
 
+  // есть бот — запись и сертификат ведут сразу в нужный раздел бота
+  if (LH.links.bot) {
+    const botLink = (start) => `https://t.me/${LH.links.bot}?start=${start}`;
+    $$('.js-book').forEach((a) => { a.href = botLink('book'); });
+    $$('.js-cert').forEach((a) => { a.href = botLink('cert'); });
+    $$('[data-bot]').forEach((a) => {
+      a.href = botLink(a.dataset.bot);
+      a.target = '_blank';
+      a.rel = 'noopener';
+      // «Позвонить» в Самарканде становится «Записаться» — берём подпись у соседних кнопок
+      if (a.dataset.i18n === 'br_call') {
+        a.innerHTML = $('[data-i18n="br_book"]').innerHTML;
+        a.dataset.i18n = 'br_book';
+      }
+    });
+  }
+
   /* ---------- i18n ---------- */
   const ruDict = {};
   $$('[data-i18n]').forEach((el) => { ruDict[el.dataset.i18n] = el.innerHTML; });
