@@ -6,7 +6,8 @@
    Переменные окружения:
      TELEGRAM_BOT_TOKEN — токен от @BotFather
      WEBHOOK_SECRET     — любая длинная случайная строка (защищает вебхук и /api/bot?setup=…)
-     ADMIN_CHAT_ID      — id чата/группы, куда падают заявки (узнать: команда /chatid в нужном чате)
+     ADMIN_CHAT_ID      — куда падают заявки: id группы или личные id админов через запятую
+                          (узнать: команда /chatid; админ должен сначала нажать /start у бота)
 
    Диплинки с сайта: t.me/<бот>?start=book | book_1 | book_2 | book_3 | cert | prices | branches */
 'use strict';
@@ -213,10 +214,12 @@ function userLink(from) {
   return `<a href="tg://user?id=${from.id}">${name}</a>` + (from.username ? ` (@${esc(from.username)})` : '');
 }
 
+const adminChats = () => (process.env.ADMIN_CHAT_ID || '').split(/[\s,;]+/).filter(Boolean);
+
 async function notifyAdmins(text) {
-  const chat = process.env.ADMIN_CHAT_ID;
-  if (!chat) { console.warn('[bot] ADMIN_CHAT_ID is not set, lead:\n' + text); return; }
-  await tg('sendMessage', { chat_id: chat, text, parse_mode: 'HTML', disable_web_page_preview: true });
+  const chats = adminChats();
+  if (!chats.length) { console.warn('[bot] ADMIN_CHAT_ID is not set, lead:\n' + text); return; }
+  await Promise.all(chats.map((chat_id) => tg('sendMessage', { chat_id, text, parse_mode: 'HTML', disable_web_page_preview: true })));
 }
 
 async function askPhone(ctx) {
@@ -618,7 +621,12 @@ async function setup(req) {
   results.webhook_info = info.ok
     ? { url: info.result.url, pending: info.result.pending_update_count, last_error: info.result.last_error_message || null }
     : info;
-  results.admin_chat_configured = Boolean(process.env.ADMIN_CHAT_ID);
+  // доступность админов без отправки сообщений: getChat работает, только если админ уже писал боту
+  results.admins = {};
+  for (const id of adminChats()) {
+    const c = await tg('getChat', { chat_id: id });
+    results.admins[id] = c.ok ? `ok: ${[c.result.first_name, c.result.last_name, c.result.title].filter(Boolean).join(' ')}` : c.description;
+  }
   return results;
 }
 
