@@ -53,9 +53,6 @@ const BRANCHES = {
   }
 };
 
-/* Зоны в записи — разделы прайса студии + консультация */
-const ZONES = [...LH.sheetGroups.map((g) => ({ ru: g.ru, uz: g.uz })), { ru: 'Нужна консультация', uz: 'Konsultatsiya kerak' }];
-
 const NOMINALS = {
   1: { ru: '500 000 сум', uz: '500 000 so‘m' },
   2: { ru: '1 000 000 сум', uz: '1 000 000 so‘m' },
@@ -80,7 +77,10 @@ const T = {
     book_sex: '📅 <b>Запись</b>\n\nДля кого процедура?', sex_w: 'Для неё', sex_m: 'Для него',
     book_dev: '📅 <b>Запись</b>\n\nНа каком аппарате?',
     dev_a: 'Candela (США)', dev_k: 'DEKA Motus PRO (Италия)', dev_h: 'HairBoss X-Fest (Германия)', dev_x: 'Не знаю — подберёт мастер',
-    book_zones: '📅 <b>Запись</b>\n\nОтметьте зоны — можно несколько — и нажмите «Готово».',
+    book_zones: '📅 <b>Запись</b>\n\nВыберите раздел и отметьте нужные зоны — можно в нескольких разделах. Затем нажмите «Готово».',
+    book_zones_sel: 'Выбрано: <b>{n}</b> · ≈ <b>{sum}</b> за процедуру',
+    book_section: '📅 <b>Запись · {name}</b>\n\nОтметьте зоны:',
+    b_sections: '← К разделам', consult: '💬 Нужна консультация', f_total: 'Стоимость', per_proc: 'за процедуру',
     zones_done: 'Готово →', zones_need: 'Отметьте хотя бы одну зону',
     book_when: '📅 <b>Запись</b>\n\nКогда вам удобно прийти?',
     when_1: 'Сегодня', when_2: 'Завтра', when_3: 'В ближайшие дни', when_4: 'Подберите время сами',
@@ -135,7 +135,10 @@ const T = {
     book_sex: '📅 <b>Yozilish</b>\n\nMuolaja kim uchun?', sex_w: 'Ayol uchun', sex_m: 'Erkak uchun',
     book_dev: '📅 <b>Yozilish</b>\n\nQaysi apparatda?',
     dev_a: 'Candela (AQSH)', dev_k: 'DEKA Motus PRO (Italiya)', dev_h: 'HairBoss X-Fest (Germaniya)', dev_x: 'Bilmayman — usta tanlaydi',
-    book_zones: '📅 <b>Yozilish</b>\n\nZonalarni belgilang — bir nechtasini ham — va «Tayyor»ni bosing.',
+    book_zones: '📅 <b>Yozilish</b>\n\nBo‘limni tanlang va kerakli zonalarni belgilang — bir nechta bo‘limda ham mumkin. So‘ng «Tayyor»ni bosing.',
+    book_zones_sel: 'Tanlandi: <b>{n}</b> · ≈ <b>{sum}</b> bir muolaja uchun',
+    book_section: '📅 <b>Yozilish · {name}</b>\n\nZonalarni belgilang:',
+    b_sections: '← Bo‘limlarga', consult: '💬 Konsultatsiya kerak', f_total: 'Narxi', per_proc: 'bir muolaja uchun',
     zones_done: 'Tayyor →', zones_need: 'Kamida bitta zonani belgilang',
     book_when: '📅 <b>Yozilish</b>\n\nQachon kelish qulay?',
     when_1: 'Bugun', when_2: 'Ertaga', when_3: 'Yaqin kunlarda', when_4: 'Vaqtni o‘zingiz tanlang',
@@ -185,6 +188,7 @@ const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</
 const money = (n) => n.toLocaleString('ru-RU').replace(/ /g, ' ');
 const btn = (text, data) => ({ text, callback_data: data });
 const url = (text, href) => ({ text, url: href });
+const tpl = (str, vars) => str.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
 
 async function tg(method, body) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -250,16 +254,18 @@ function menuRows(l) {
 const homeRow = (l) => [btn(T[L(l)].b_menu, `m:${l}:menu`)];
 
 /* ---------- запись ----------
-   Состояние: l.c.b.x.d.m.k.w
-   l язык (r/u), c город (t/s), b студия (1/2/3), x для кого (w/m),
-   d аппарат (a/k/h/x), m зоны — битовая маска (hex), k зоны выбраны (0/1), w когда (1–4) */
-const BOOK_FIELDS = ['l', 'c', 'b', 'x', 'd', 'm', 'k', 'w'];
+   Состояние: l.c.b.x.d.m.q.g.k.w
+   l язык (r/u), c город (t/s), b студия (1/2/3), x для кого (w/m), d аппарат (a/k/h/x),
+   m зоны — битовая маска по индексам строк прайса (hex), q нужна консультация (0/1),
+   g открытый раздел зон (индекс или -), k зоны выбраны (0/1), w когда (1–4) */
+const BOOK_FIELDS = ['l', 'c', 'b', 'x', 'd', 'm', 'q', 'g', 'k', 'w'];
 
 function parseBook(str) {
   const parts = (str || '').split('.');
   const s = {};
   BOOK_FIELDS.forEach((f, i) => { s[f] = parts[i] || '-'; });
   if (s.m === '-') s.m = '0';
+  if (s.q === '-') s.q = '0';
   if (s.k === '-') s.k = '0';
   // авто-шаги: в Самарканде одна студия, мужчинам — только Candela
   if (s.c === 's') s.b = '3';
@@ -269,33 +275,109 @@ function parseBook(str) {
 const packBook = (s) => BOOK_FIELDS.map((f) => s[f]).join('.');
 const bookCb = (s, act) => `B:${packBook(s)}${act ? ':' + act : ''}`;
 
+// маска до 32 зон: работаем через >>> 0, чтобы 32-й бит не делал число отрицательным
+const maskOf = (s) => parseInt(s.m, 16) || 0;
+const hasBit = (m, i) => ((m >>> i) & 1) === 1;
+const flipBit = (m, i) => ((m ^ (1 << i)) >>> 0).toString(16);
+
 function bookBack(s) {
   const p = { ...s };
+  const resetZones = () => { p.m = '0'; p.q = '0'; p.g = '-'; };
   if (p.w !== '-') p.w = '-';
   else if (p.k === '1') p.k = '0';
-  else if (p.d !== '-' && p.x !== 'm') p.d = '-';
-  else if (p.x !== '-') { p.x = '-'; p.d = '-'; }
+  else if (p.g !== '-') p.g = '-';
+  else if (p.d !== '-' && p.x !== 'm') { p.d = '-'; resetZones(); }
+  else if (p.x !== '-') { p.x = '-'; p.d = '-'; resetZones(); }
   else if (p.b !== '-' && p.c !== 's') p.b = '-';
   else { p.c = '-'; p.b = '-'; }
   return p;
 }
 
-function zonesList(mask, lang) {
-  const m = parseInt(mask, 16) || 0;
-  return ZONES.filter((_, i) => m & (1 << i)).map((z) => z[lang]);
+/* Прайс под выбранные «для кого» и аппарат: DEKA/Candela/«не знаю» — лист александрита, HairBoss — диод */
+function bookPrices(s) {
+  return LH.prices[s.x === 'm' ? 'men' : 'women'][s.d === 'h' ? 'diode' : 'alex'];
+}
+
+/* Разделы прайса в порядке листа студии; idx — индексы строк прайса */
+function bookSections(s) {
+  const list = bookPrices(s);
+  const sheet = list.some((r) => r[4]);
+  const groups = sheet ? LH.sheetGroups : LH.groups.filter((g) => g.id !== 'all');
+  return groups
+    .map((g) => ({
+      ru: g.ru, uz: g.uz,
+      idx: list.map((r, i) => ((sheet ? r[4] : LH.zones[r[0]].g) === g.id ? i : -1)).filter((i) => i >= 0)
+    }))
+    .filter((g) => g.idx.length);
+}
+
+function selectedZones(s) {
+  const m = maskOf(s);
+  return bookPrices(s).filter((_, i) => hasBit(m, i));
+}
+
+const zonesTotal = (s) => selectedZones(s).reduce((sum, r) => sum + r[2], 0);
+const plain = (label) => label.replace(/^\S+\s/, ''); // без эмодзи в начале
+
+function zonesText(s, lang) {
+  const names = selectedZones(s).map((r) => LH.zones[r[0]][lang]);
+  if (s.q === '1') names.push(plain(T[lang].consult));
+  return names.join(', ');
 }
 
 function bookSummary(s, lang) {
   const t = T[lang];
   const br = BRANCHES[s.b][lang];
   const city = BRANCHES[s.b].city === 's' ? t.city_s : t.city_t;
+  const total = zonesTotal(s);
   return [
     `${t.f_branch}: <b>${city} · ${esc(br.name)}</b>, ${esc(br.addr)}`,
     `${t.f_for}: <b>${s.x === 'm' ? t.sex_m : t.sex_w}</b>`,
     `${t.f_dev}: <b>${t['dev_' + s.d]}</b>`,
-    `${t.f_zones}: <b>${zonesList(s.m, lang).join(', ')}</b>`,
+    `${t.f_zones}: <b>${esc(zonesText(s, lang))}</b>`,
+    total ? `${t.f_total}: <b>≈ ${money(total)} ${t.sum}</b> ${t.per_proc}` : null,
     `${t.f_when}: <b>${t['when_' + s.w]}</b>`
-  ].join('\n');
+  ].filter(Boolean).join('\n');
+}
+
+function zonesScreen(ctx, s, t) {
+  const sections = bookSections(s);
+  const list = bookPrices(s);
+  const m = maskOf(s);
+  const picked = selectedZones(s).length + (s.q === '1' ? 1 : 0);
+  const status = picked ? '\n\n' + tpl(t.book_zones_sel, { n: picked, sum: `${money(zonesTotal(s))} ${t.sum}` }) : '';
+  const done = btn(t.zones_done, bookCb({ ...s, g: '-' }, 'ok'));
+
+  // открыт раздел — все его зоны из прайса с ценами
+  const open = s.g !== '-' ? sections[Number(s.g)] : null;
+  if (open) {
+    const rows = open.idx.map((i) => {
+      const [key, , price] = list[i];
+      return [btn(`${hasBit(m, i) ? '✅' : '▫️'} ${LH.zones[key][ctx.lang]} · ${money(price)}`, bookCb(s, 't' + i))];
+    });
+    rows.push([btn(t.b_sections, bookCb({ ...s, g: '-' })), done]);
+    rows.push(homeRow(s.l));
+    return show(ctx, tpl(t.book_section, { name: esc(open[ctx.lang]) }) + status, rows);
+  }
+
+  // основные разделы по два в ряд; раздел из одной зоны («Всё тело») отмечается сразу
+  const entries = sections.map((sec, gi) => ({ sec, gi }));
+  const sectionBtn = ({ sec, gi }) => {
+    if (sec.idx.length === 1) {
+      const i = sec.idx[0];
+      return btn(`${hasBit(m, i) ? '✅' : '▫️'} ${LH.zones[list[i][0]][ctx.lang]} · ${money(list[i][2])}`, bookCb(s, 't' + i));
+    }
+    const n = sec.idx.filter((i) => hasBit(m, i)).length;
+    return btn(n ? `✅ ${sec[ctx.lang]} · ${n} ›` : `${sec[ctx.lang]} ›`, bookCb({ ...s, g: String(gi) }));
+  };
+  const multi = entries.filter((e) => e.sec.idx.length > 1);
+  const rows = [];
+  for (let i = 0; i < multi.length; i += 2) rows.push(multi.slice(i, i + 2).map(sectionBtn));
+  entries.filter((e) => e.sec.idx.length === 1).forEach((e) => rows.push([sectionBtn(e)]));
+  rows.push([btn(`${s.q === '1' ? '✅' : '▫️'} ${plain(t.consult)}`, bookCb(s, 'q'))]);
+  rows.push([done]);
+  rows.push([btn(t.b_back, bookCb(s, 'back')), ...homeRow(s.l)]);
+  return show(ctx, t.book_zones + status, rows);
 }
 
 async function handleBook(ctx, data) {
@@ -306,13 +388,12 @@ async function handleBook(ctx, data) {
 
   if (act === 'back') s = bookBack(s);
   if (act === 'restart') s = parseBook(s.l);
-  if (act && act[0] === 't') {
-    const i = Number(act.slice(1));
-    s.m = ((parseInt(s.m, 16) || 0) ^ (1 << i)).toString(16);
-  }
+  if (act && /^t\d+$/.test(act)) s.m = flipBit(maskOf(s), Number(act.slice(1)));
+  if (act === 'q') s.q = s.q === '1' ? '0' : '1';
   if (act === 'ok') {
-    if (!parseInt(s.m, 16)) return { alert: t.zones_need };
+    if (!maskOf(s) && s.q !== '1') return { alert: t.zones_need };
     s.k = '1';
+    s.g = '-';
   }
   if (act === 'send') return sendBooking(ctx, s);
 
@@ -337,18 +418,7 @@ async function handleBook(ctx, data) {
   if (s.d === '-') {
     return show(ctx, t.book_dev, nav(['a', 'k', 'h', 'x'].map((d) => [btn(t['dev_' + d], bookCb({ ...s, d }))])));
   }
-  if (s.k !== '1') {
-    const m = parseInt(s.m, 16) || 0;
-    const zoneBtn = (i) => btn(`${m & (1 << i) ? '✅' : '▫️'} ${ZONES[i][ctx.lang]}`, bookCb(s, 't' + i));
-    const rows = [];
-    // зоны прайса — по две в ряд, «Нужна консультация» — отдельной строкой
-    for (let i = 0; i < ZONES.length - 1; i += 2) {
-      rows.push(i + 1 < ZONES.length - 1 ? [zoneBtn(i), zoneBtn(i + 1)] : [zoneBtn(i)]);
-    }
-    rows.push([zoneBtn(ZONES.length - 1)]);
-    rows.push([btn(t.zones_done, bookCb(s, 'ok'))]);
-    return show(ctx, t.book_zones, nav(rows));
-  }
+  if (s.k !== '1') return zonesScreen(ctx, s, t);
   if (s.w === '-') {
     const rows = [
       [btn(t.when_1, bookCb({ ...s, w: '1' })), btn(t.when_2, bookCb({ ...s, w: '2' }))],
