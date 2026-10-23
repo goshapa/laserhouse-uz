@@ -1,6 +1,6 @@
 # Laser House — сайт
 
-Статический сайт без сборки: `index.html` + `assets/`. Открыть можно двойным кликом или через локальный сервер:
+Сайт: https://laserhouse.uz (www и laserhouse.vercel.app тоже работают). Статический сайт без сборки: `index.html` + `assets/`. Открыть можно двойным кликом или через локальный сервер:
 
 ```bash
 npx http-server -p 5173 -c-1

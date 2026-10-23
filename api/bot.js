@@ -26,7 +26,7 @@ function loadSiteData() {
 }
 const LH = loadSiteData();
 
-const SITE = 'https://laserhouse.vercel.app';
+const SITE = 'https://laserhouse.uz';
 const ADMIN_CONTACT = 'https://t.me/laserhouse_uz';
 
 const BRANCHES = {
