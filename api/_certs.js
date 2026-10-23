@@ -478,5 +478,22 @@ module.exports = function createCerts(d) {
     return show(ctx, `${t.mine_title}\n\n${lines.join('\n\n')}`, rows);
   }
 
-  return { notifyOrder, handleAdminText, handleCallback, showMine, adminHelp, isAdmin, sheetsReady, parseCode, _sheets: sheets };
+  /* ---------- самопроверка таблицы: создать → списать → аннулировать, без сообщений в Telegram ---------- */
+  async function selfTest() {
+    const now = new Date();
+    const expires = new Date(now);
+    expires.setMonth(expires.getMonth() + validMonths());
+    const code = genCode();
+    const created = await sheets('create', { cert: {
+      code, nominal: 500000, balance: 500000, status: ST.active, buyer: 'ТЕСТ — проверка связи, можно удалить',
+      phone: '', recipient: '', format: 'Электронный', branch: '', issued: now.toISOString(), expires: expires.toISOString(),
+      issuedBy: 'бот (самопроверка)', history: `${today()} — выдан (бот, самопроверка)`, buyerTg: '', order: ''
+    } });
+    const part = await sheets('update', { code, expectStatus: ST.active, expectBalance: 500000, balance: 300000, historyLine: `${today()} — списано 200 000 сум, остаток 300 000 сум (бот, самопроверка)` });
+    const voided = await sheets('update', { code, expectStatus: ST.active, status: ST.void, historyLine: `${today()} — аннулирован (бот, самопроверка)` });
+    const final = await sheets('get', { code });
+    return { code, created: Boolean(created && created.created), part_ok: Boolean(part && part.updated), void_ok: Boolean(voided && voided.updated), final };
+  }
+
+  return { notifyOrder, handleAdminText, handleCallback, showMine, adminHelp, isAdmin, sheetsReady, parseCode, selfTest, _sheets: sheets };
 };

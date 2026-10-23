@@ -743,6 +743,7 @@ module.exports = async (req, res) => {
       const out = {};
       try {
         out.certificates_sheet = certs.sheetsReady() ? `connected: ${await certs._sheets('ping')}` : 'not connected';
+        if (req.query.selftest === '1' && certs.sheetsReady()) out.selftest = await certs.selfTest();
       } catch (e) {
         out.certificates_sheet = 'error: ' + e.message;
       }
