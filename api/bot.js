@@ -708,6 +708,23 @@ module.exports = async (req, res) => {
     if (secret && req.query && req.query.setup === secret) {
       return res.status(200).json(await setup(req));
     }
+    // проверка связи с админами без перенастройки вебхука; &test=1 — отправить тестовую заявку
+    if (secret && req.query && req.query.check === secret) {
+      const out = {};
+      for (const id of adminChats()) {
+        const c = await tg('getChat', { chat_id: id });
+        out[id] = { reachable: c.ok ? [c.result.first_name, c.result.last_name].filter(Boolean).join(' ') : c.description };
+        if (c.ok && req.query.test === '1') {
+          const m = await tg('sendMessage', {
+            chat_id: id,
+            parse_mode: 'HTML',
+            text: '🧪 <b>Тестовая заявка — проверка связи</b>\n\nТак будут приходить заявки на запись и заказы сертификатов из бота @LaserHouseuzbot. Ничего делать не нужно.'
+          });
+          out[id].test_sent = m.ok ? 'ok' : m.description;
+        }
+      }
+      return res.status(200).json(out);
+    }
     return res.status(200).send('Laser House bot is running');
   }
   if (req.method !== 'POST') return res.status(405).end();
