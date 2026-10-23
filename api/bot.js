@@ -744,6 +744,14 @@ module.exports = async (req, res) => {
       try {
         out.certificates_sheet = certs.sheetsReady() ? `connected: ${await certs._sheets('ping')}` : 'not connected';
         if (req.query.selftest === '1' && certs.sheetsReady()) out.selftest = await certs.selfTest();
+        const wh = await tg('getWebhookInfo', {});
+        if (wh.ok) {
+          out.webhook = {
+            url: wh.result.url, pending: wh.result.pending_update_count,
+            last_error: wh.result.last_error_message || null,
+            last_error_at: wh.result.last_error_date ? new Date(wh.result.last_error_date * 1000).toISOString() : null
+          };
+        }
       } catch (e) {
         out.certificates_sheet = 'error: ' + e.message;
       }
