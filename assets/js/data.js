@@ -202,8 +202,8 @@ LH.faq = [
   {
     q: { ru: 'Сколько процедур понадобится?', uz: 'Nechta muolaja kerak bo‘ladi?' },
     a: {
-      ru: 'В среднем 6–10 процедур с интервалом 3–6 недель. Лазерная эпиляция делается только курсом: нужно «поймать» все волны роста волос. После каждой процедуры мастер оценивает, как уходят волосы, и говорит, сколько осталось. После курса — 1–2 поддерживающие процедуры раз в полгода-год.',
-      uz: 'O‘rtacha 3–6 hafta oraliq bilan 6–10 muolaja. Lazer epilyatsiyasi faqat kurs bilan qilinadi: tuklar o‘sishining barcha to‘lqinlarini «ushlash» kerak. Har muolajadan keyin usta natijani baholab, yana nechta qolganini aytadi. Kursdan so‘ng — yarim yilda-yilda 1–2 ta qo‘llab-quvvatlovchi muolaja.'
+      ru: 'В среднем 6–10 процедур с интервалом 4–6 недель. Лазерная эпиляция делается только курсом: нужно «поймать» все волны роста волос. После каждой процедуры мастер оценивает, как уходят волосы, и говорит, сколько осталось. После курса — 1–2 поддерживающие процедуры раз в полгода-год.',
+      uz: 'O‘rtacha 4–6 hafta oraliq bilan 6–10 muolaja. Lazer epilyatsiyasi faqat kurs bilan qilinadi: tuklar o‘sishining barcha to‘lqinlarini «ushlash» kerak. Har muolajadan keyin usta natijani baholab, yana nechta qolganini aytadi. Kursdan so‘ng — yarim yilda-yilda 1–2 ta qo‘llab-quvvatlovchi muolaja.'
     }
   },
   {
@@ -312,14 +312,14 @@ LH.uz = {
   for_her: 'Ayollar uchun', for_him: 'Erkaklar uchun', dev_diode: 'Diod HairBoss', dev_alex: 'Aleksandrit Candela',
   calc_selected: 'Tanlangan zonalar', calc_empty: 'Zonalarni tanlang — summa shu yerda paydo bo‘ladi',
   calc_total: 'Bir muolaja', calc_time: 'Taxminiy vaqt', calc_clear: 'Tozalash', calc_book: 'Shu zonalarga yozilish',
-  calc_note: 'Kurs — 3–6 hafta oraliq bilan 6–10 muolaja. Aktual narxni administratordan aniqlang.',
+  calc_note: 'Kurs — 4–6 hafta oraliq bilan 6–10 muolaja. Aktual narxni administratordan aniqlang.',
   min: 'daq', hour: 'soat',
   course_kicker: 'Qanday ishlaydi',
   course_title_html: 'Konsultatsiyadan<br><em>silliq teri</em>gacha',
   step1_t: 'Konsultatsiya va tanlov', step1_d: 'Usta fototip, teri va tuklarni baholaydi, apparat va parametrlarni tanlaydi.',
-  step2_t: 'Muolaja', step2_d: 'Zonalarga qarab 5 daqiqadan 3,5 soatgacha. Zamonaviy sovutish, faqat yengil iliqlik.',
+  step2_t: 'Muolaja', step2_d: 'Zonalarga qarab 10 daqiqadan 2 soat 30 daqiqagacha. Zamonaviy sovutish, faqat yengil iliqlik.',
   step3_t: '7–10 kunda natija', step3_d: 'Tuklar to‘kiladi, sekinroq va ingichkaroq o‘sadi.',
-  step4_t: '6–10 muolajalik kurs', step4_d: '3–6 hafta oraliq: lazer o‘sish bosqichidagi follikulalarni «ushlaydi».',
+  step4_t: '6–10 muolajalik kurs', step4_d: '4–6 hafta oraliq: lazer o‘sish bosqichidagi follikulalarni «ushlaydi».',
   step5_t: 'Qo‘llab-quvvatlash', step5_d: 'Kursdan keyin — yarim yilda-yilda 1–2 muolaja.',
   growth_title: 'Har muolajadan keyin tuklar kamayadi', growth_note: 'Sxematik ko‘rinish. Natija individual.', session: 'muolaja',
   pain_kicker: 'Eng ko‘p beriladigan savol',

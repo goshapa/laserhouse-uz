@@ -105,7 +105,7 @@ const T = {
 
     prices_pick: '💎 <b>Цены</b>\n\nКакой прайс показать?',
     p_wa: 'Для неё · Candela / DEKA', p_wh: 'Для неё · HairBoss', p_ma: 'Для него · Candela',
-    prices_note: '<i>Цены за одну процедуру. Курс — 6–10 процедур с интервалом 3–6 недель.</i>',
+    prices_note: '<i>Цены за одну процедуру. Курс — 6–10 процедур с интервалом 4–6 недель.</i>',
     sale_note: '<i>Цены указаны с учётом скидки.</i>',
     t_wa: 'Для неё · DEKA / Candela (александрит)', t_wh: 'Для неё · HairBoss X-Fest (диод)', t_ma: 'Для него · Candela (александрит)',
     sum: 'сум',
@@ -163,7 +163,7 @@ const T = {
 
     prices_pick: '💎 <b>Narxlar</b>\n\nQaysi narxnomani ko‘rsatay?',
     p_wa: 'Ayollar · Candela / DEKA', p_wh: 'Ayollar · HairBoss', p_ma: 'Erkaklar · Candela',
-    prices_note: '<i>Narxlar bir muolaja uchun. Kurs — 3–6 hafta oraliq bilan 6–10 muolaja.</i>',
+    prices_note: '<i>Narxlar bir muolaja uchun. Kurs — 4–6 hafta oraliq bilan 6–10 muolaja.</i>',
     sale_note: '<i>Narxlar chegirma bilan ko‘rsatilgan.</i>',
     t_wa: 'Ayollar · DEKA / Candela (aleksandrit)', t_wh: 'Ayollar · HairBoss X-Fest (diod)', t_ma: 'Erkaklar · Candela (aleksandrit)',
     sum: 'so‘m',
