@@ -775,6 +775,13 @@ module.exports = async (req, res) => {
       try {
         out.certificates_sheet = certs.sheetsReady() ? `connected: ${await certs._sheets('ping')}` : 'not connected';
         if (req.query.selftest === '1' && certs.sheetsReady()) out.selftest = await certs.selfTest();
+        const me = await tg('getMe', {});
+        out.ai_agent = {
+          claude_key: !!process.env.ANTHROPIC_API_KEY,
+          enabled: agent.enabled(),
+          memory: store.persistent() ? 'redis' : 'in-memory (подключите Upstash Redis)',
+          business_mode_in_botfather: me.ok ? !!me.result.can_connect_to_business : me.description
+        };
         const wh = await tg('getWebhookInfo', {});
         if (wh.ok) {
           out.webhook = {
