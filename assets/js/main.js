@@ -46,7 +46,9 @@
     set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* noop */ } }
   };
 
-  let lang = store.get('lh-lang') === 'uz' ? 'uz' : 'ru';
+  // ?lang=uz|ru в ссылке (например, из рекламы) важнее сохранённого выбора
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  let lang = (urlLang === 'uz' || urlLang === 'ru' ? urlLang : store.get('lh-lang')) === 'uz' ? 'uz' : 'ru';
   const t = (k) => T[lang][k];
   const fmt = (n) => n.toLocaleString('ru-RU').replace(/ /g, ' ');
   const money = (n) => fmt(n) + ' ' + t('currency');
@@ -72,6 +74,32 @@
         a.innerHTML = $('[data-i18n="br_book"]').innerHTML;
         a.dataset.i18n = 'br_book';
       }
+    });
+  }
+
+  /* ---------- Google Реклама: заявки как конверсии ---------- */
+  if (LH.ads && LH.ads.id) {
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(LH.ads.id);
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', LH.ads.id);
+
+    const kindOf = (a) => {
+      if (a.matches('.js-cert') || a.dataset.bot === 'cert') return 'cert';
+      if (a.matches('.js-book') || /^book/.test(a.dataset.bot || '')) return 'book';
+      if (/^tel:/.test(a.getAttribute('href') || '')) return 'call';
+      if (a.matches('.js-tg, .js-ig')) return 'chat';
+      return null;
+    };
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      const kind = a && kindOf(a);
+      const label = kind && LH.ads.labels[kind];
+      if (label) window.gtag('event', 'conversion', { send_to: `${LH.ads.id}/${label}` });
     });
   }
 
