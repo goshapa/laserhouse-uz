@@ -78,16 +78,8 @@
   }
 
   /* ---------- Google Реклама: заявки как конверсии ---------- */
-  if (LH.ads && LH.ads.id) {
-    const s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(LH.ads.id);
-    document.head.appendChild(s);
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function () { window.dataLayer.push(arguments); };
-    window.gtag('js', new Date());
-    window.gtag('config', LH.ads.id);
-
+  // сам тег Google стоит в <head> index.html; здесь только отправка заявок
+  if (LH.ads && LH.ads.id && typeof window.gtag === 'function') {
     const kindOf = (a) => {
       if (a.matches('.js-cert') || a.dataset.bot === 'cert') return 'cert';
       if (a.matches('.js-book') || /^book/.test(a.dataset.bot || '')) return 'book';
