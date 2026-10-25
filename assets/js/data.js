@@ -19,10 +19,10 @@ LH.links = {
 LH.ads = {
   id: 'AW-18533502821', // сам тег стоит в <head> index.html
   labels: {
-    book: '',  // «Записаться» — переход в бота на запись
-    cert: '',  // «Заказать сертификат»
-    call: '',  // нажатие на номер телефона
-    chat: ''   // переход в Telegram или Instagram студии
+    book: 'zIC4CPKFhakdEOWeu4VF',  // «Запись» — переход в бота на запись
+    cert: 'PeNvCIrahakdEOWeu4VF',  // «Сертификат» — заказ сертификата
+    call: 'nptLCMHbhakdEOWeu4VF',  // «Звонок» — нажатие на номер телефона
+    chat: '-kXmCMTbhakdEOWeu4VF'   // «Мессенджер» — переход в Telegram или Instagram студии (второстепенная)
   }
 };
 
