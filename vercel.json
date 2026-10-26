@@ -9,6 +9,14 @@
       "maxDuration": 60
     }
   },
+  "redirects": [
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [{ "type": "host", "value": "laserhouse.vercel.app" }],
+      "destination": "https://laserhouse.uz/:path",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/",
