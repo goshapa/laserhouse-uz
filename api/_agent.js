@@ -5,7 +5,7 @@
    Переменные окружения:
      ANTHROPIC_API_KEY — ключ Claude API (console.anthropic.com)
      AI_ENABLED        — "0" выключает агента (сообщения просто пересылаются админам)
-     AI_PAUSE_HOURS    — сколько часов агент молчит в чате после ответа живого администратора (по умолчанию 12) */
+     AI_PAUSE_HOURS    — сколько часов агент молчит в чате после ответа живого администратора или вызова админа (по умолчанию 12) */
 'use strict';
 
 const Anthropic = require('@anthropic-ai/sdk');
@@ -159,7 +159,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     }
     if (name === 'call_admin') {
       const sent = await notifyOnce('admin', who, `🙋 <b>Клиент ждёт администратора</b>\n\nОткуда: ${src}\nПричина: ${esc(input.reason)}\n\n` +
-        'Ответьте клиенту в этом чате — после вашего ответа ИИ замолчит в нём на ' + pauseHours() + ' ч.');
+        'Ответьте клиенту в этом чате — ИИ в нём больше не отвечает ' + pauseHours() + ' ч.');
+      await pause(who.channel, who.chatId); // дальше в этом чате — только живой администратор
       return sent ? 'Администратор получил уведомление.' : 'Администратор уже позван в этот чат, повторно не беспокой — он ответит здесь.';
     }
     return 'Неизвестный инструмент.';
