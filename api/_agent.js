@@ -132,20 +132,35 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
   const isPaused = async (channel, chatId) => !!(await store.get(pauseKey(channel, chatId)));
 
+  /* уведомление админам — не чаще одного раза на чат: модель не помнит прошлые вызовы и зовёт инструменты повторно */
+  const sentKey = (kind, ch, id) => `ai:n:${kind}:${ch}:${id}`;
+  const NOTIFY_TTL = { booking: 24 * 3600, admin: 12 * 3600 };
+  const wasSent = async (kind, who) => !!(await store.get(sentKey(kind, who.channel, who.chatId)));
+
+  async function notifyOnce(kind, who, html) {
+    const key = sentKey(kind, who.channel, who.chatId);
+    if (!(await store.once(key, NOTIFY_TTL[kind]))) return false;
+    try { await notifyAdmins(html); } catch (e) { await store.del(key); throw e; }
+    return true;
+  }
+
   async function runTool(name, input, who) {
     const src = `${CHANNELS[who.channel]} · ${who.label}`;
     if (name === 'submit_booking') {
+      if (await wasSent('booking', who)) {
+        return 'Заявка этого клиента уже у администраторов, повторно не отправлена. Скажи клиенту, что администратор свяжется и подтвердит запись; уточнения администратор увидит в этом чате.';
+      }
       const line = (k, v) => (v ? `\n${k}: <b>${esc(v)}</b>` : '');
-      await notifyAdmins(`📅 <b>Заявка на запись (ИИ-администратор)</b>\n\nОткуда: ${src}` +
+      const sent = await notifyOnce('booking', who, `📅 <b>Заявка на запись (ИИ-администратор)</b>\n\nОткуда: ${src}` +
         line('Имя', input.name) + line('Телефон', input.phone) + line('Филиал', input.branch) +
         line('Зоны', input.zones) + line('Когда удобно', input.preferred_time) + line('Комментарий', input.comment) +
         '\n\nПодтвердите время клиенту — в этом же чате или по телефону.');
-      return 'Заявка отправлена администраторам.';
+      return sent ? 'Заявка отправлена администраторам.' : 'Заявка уже у администраторов.';
     }
     if (name === 'call_admin') {
-      await notifyAdmins(`🙋 <b>Клиент ждёт администратора</b>\n\nОткуда: ${src}\nПричина: ${esc(input.reason)}\n\n` +
+      const sent = await notifyOnce('admin', who, `🙋 <b>Клиент ждёт администратора</b>\n\nОткуда: ${src}\nПричина: ${esc(input.reason)}\n\n` +
         'Ответьте клиенту в этом чате — после вашего ответа ИИ замолчит в нём на ' + pauseHours() + ' ч.');
-      return 'Администратор получил уведомление.';
+      return sent ? 'Администратор получил уведомление.' : 'Администратор уже позван в этот чат, повторно не беспокой — он ответит здесь.';
     }
     return 'Неизвестный инструмент.';
   }
@@ -157,7 +172,11 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
     const history = (await store.get(histKey(who.channel, who.chatId))) || [];
     const messages = [...history, { role: 'user', content: text }];
-    const system = SYSTEM.replace('{CHANNEL}', CHANNELS[who.channel]) + knowledge();
+    const notes = [];
+    if (await wasSent('booking', who)) notes.push('Заявка этого клиента уже отправлена администраторам — submit_booking больше не вызывай, изменения администратор увидит в чате.');
+    if (await wasSent('admin', who)) notes.push('Администратор уже позван в этот чат — call_admin больше не вызывай, скажи, что он скоро ответит.');
+    const system = SYSTEM.replace('{CHANNEL}', CHANNELS[who.channel]) + knowledge() +
+      (notes.length ? '\n\n# Состояние этого чата\n' + notes.join('\n') : '');
 
     let answer = '';
     for (let step = 0; step < 4; step++) {
