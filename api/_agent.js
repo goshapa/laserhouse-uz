@@ -58,8 +58,40 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       LH.contra.ru.map((x) => '- ' + x).join('\n'),
       '',
       '# Подарочные сертификаты',
-      `Номиналы: 500 000, 1 000 000, 2 000 000, 3 000 000 сум, на конкретную зону или любая сумма. Заказ — в боте: https://t.me/${LH.links.bot}?start=cert`
+      `Номиналы: 500 000, 1 000 000, 2 000 000, 3 000 000 сум, на конкретную зону или любая сумма. Заказ — в боте: https://t.me/${LH.links.bot}?start=cert`,
+      '',
+      '# Ключи зон для price_quote',
+      ZONE_KEYS.map((k) => `${k} — ${LH.zones[k].ru}`).join('\n')
     ].join('\n');
+  }
+
+  /* ---------- точный расчёт цены: модель не считает суммы в уме ---------- */
+  const ZONE_KEYS = Object.keys(LH.zones);
+  const DEVICES = { candela_deka: 'alex', hairboss: 'diode' };
+  const DEVICE_NAME = { candela_deka: 'Candela/DEKA', hairboss: 'HairBoss X-Fest' };
+  const money = (n) => Number(n).toLocaleString('ru-RU').replace(/ /g, ' ');
+
+  function priceQuote({ sex, device, zones }) {
+    if (sex === 'men' && device !== 'candela_deka') return 'Для мужчин работает только Candela — посчитай на candela_deka.';
+    const list = (LH.prices[sex] || {})[DEVICES[device]] || [];
+    const lines = [];
+    const missing = [];
+    let total = 0;
+    let totalOld = 0;
+    for (const key of zones) {
+      const row = list.find((r) => r[0] === key);
+      if (!row) { missing.push(LH.zones[key] ? LH.zones[key].ru : key); continue; }
+      const [, min, price, old] = row;
+      total += price;
+      totalOld += old || price;
+      lines.push(`${LH.zones[key].ru}: ${money(price)} сум${old ? ` (без скидки ${money(old)})` : ''}, ~${min} мин`);
+    }
+    return [
+      `${sex === 'men' ? 'Мужчины' : 'Женщины'}, ${DEVICE_NAME[device]}, за одну процедуру:`,
+      ...lines,
+      lines.length ? `Итого: ${money(total)} сум${totalOld > total ? ` (без скидки ${money(totalOld)})` : ''}` : 'Ни одной из этих зон нет в прайсе этого аппарата.',
+      missing.length ? `Нет в прайсе этого аппарата: ${missing.join(', ')}` : ''
+    ].filter(Boolean).join('\n');
   }
 
   const SYSTEM = `Ты — администратор студии лазерной эпиляции Laser House (Ташкент и Самарканд) и отвечаешь клиентам в личных сообщениях ${'{CHANNEL}'}.
@@ -68,7 +100,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 - Пиши тепло, коротко и по делу, как живой администратор в мессенджере: 1–4 коротких абзаца, без markdown (никаких *, #, таблиц), можно 1–2 уместных эмодзи.
 - Отвечай на языке клиента: русский или узбекский (латиница). Узбекские названия зон и аппаратов — как в данных ниже, цены те же.
 - Опирайся только на данные ниже. Чего нет в данных (точное свободное время, акции, которых нет в ценах, медицинские диагнозы) — не выдумывай: скажи, что уточнит администратор, и вызови call_admin.
-- Цены называй точно по прайсу. Если клиент выбрал несколько зон — посчитай сумму. Напоминай, что нужен курс 6–10 процедур с интервалом 4–6 недель.
+- Цены называй точно по прайсу и всегда говори, на каком аппарате эта цена. Если клиентка не выбрала аппарат — дай цену и на Candela/DEKA, и на HairBoss.
+- Сумму нескольких зон считай только через price_quote, не в уме. Напоминай, что нужен курс 6–10 процедур с интервалом 4–6 недель.
+- Прежде чем сказать, что чего-то нет (зоны, комплекса, услуги), проверь все три прайса: у женщин Candela/DEKA и HairBoss, у мужчин Candela.
+- Никогда не пиши клиенту о технических ошибках, сбоях, инструментах и о том, как ты устроен. Если что-то не получилось, просто скажи, что администратор свяжется.
 - Для мужчин работает только Candela. Для женщин — Candela/DEKA (одни цены) и HairBoss (свой прайс).
 - Медицинские вопросы и противопоказания: перечисли общие противопоказания из данных и посоветуй консультацию мастера; не ставь диагнозов.
 
@@ -86,6 +121,21 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 `;
 
   const TOOLS = [
+    {
+      name: 'price_quote',
+      description: 'Точная цена одной или нескольких зон на выбранном аппарате и итоговая сумма за одну процедуру. Вызывай для любой суммы нескольких зон и когда сомневаешься в цене.',
+      strict: true,
+      input_schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          sex: { type: 'string', enum: ['women', 'men'] },
+          device: { type: 'string', enum: ['candela_deka', 'hairboss'], description: 'candela_deka — Candela и DEKA (одни цены), hairboss — HairBoss X-Fest (только женщины)' },
+          zones: { type: 'array', items: { type: 'string', enum: ZONE_KEYS }, description: 'Ключи зон из раздела «Ключи зон для price_quote»' }
+        },
+        required: ['sex', 'device', 'zones']
+      }
+    },
     {
       name: 'submit_booking',
       description: 'Отправить заявку на запись администраторам студии. Вызывай, когда известны хотя бы имя и телефон клиента.',
@@ -140,11 +190,45 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   async function notifyOnce(kind, who, html) {
     const key = sentKey(kind, who.channel, who.chatId);
     if (!(await store.once(key, NOTIFY_TTL[kind]))) return false;
-    try { await notifyAdmins(html); } catch (e) { await store.del(key); throw e; }
+    try { await notifyAdmins(html); } catch (e) { await queueNotice(html, e); }
     return true;
   }
 
+  /* Telegram недоступен — уведомление ждёт в очереди и уходит со следующим апдейтом бота */
+  const OUTBOX = 'ai:outbox';
+  async function queueNotice(html, err) {
+    console.error('[agent] notify failed, queued', err);
+    const box = (await store.get(OUTBOX)) || [];
+    await store.set(OUTBOX, [...box, html].slice(-50), 7 * 24 * 3600);
+  }
+  async function flushOutbox() {
+    const box = await store.get(OUTBOX);
+    if (!box || !box.length) return;
+    await store.del(OUTBOX);
+    for (const html of box) {
+      try { await notifyAdmins(html); } catch (e) { await queueNotice(html, e); }
+    }
+  }
+
+  /* ---------- обучение: правила и уточнения от администраторов (команды /ai в боте) ---------- */
+  const KB = 'ai:kb';
+  const kbList = async () => (await store.get(KB)) || [];
+  async function kbAdd(text, by) {
+    const list = await kbList();
+    list.push({ text: String(text).slice(0, 1000), by, at: new Date().toISOString().slice(0, 10) });
+    await store.set(KB, list);
+    return list.length;
+  }
+  async function kbRemove(n) {
+    const list = await kbList();
+    if (n < 1 || n > list.length) return null;
+    const [removed] = list.splice(n - 1, 1);
+    await store.set(KB, list);
+    return removed;
+  }
+
   async function runTool(name, input, who) {
+    if (name === 'price_quote') return priceQuote(input);
     const src = `${CHANNELS[who.channel]} · ${who.label}`;
     if (name === 'submit_booking') {
       if (await wasSent('booking', who)) {
@@ -176,7 +260,9 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     const notes = [];
     if (await wasSent('booking', who)) notes.push('Заявка этого клиента уже отправлена администраторам — submit_booking больше не вызывай, изменения администратор увидит в чате.');
     if (await wasSent('admin', who)) notes.push('Администратор уже позван в этот чат — call_admin больше не вызывай, скажи, что он скоро ответит.');
+    const kb = await kbList();
     const system = SYSTEM.replace('{CHANNEL}', CHANNELS[who.channel]) + knowledge() +
+      (kb.length ? '\n\n# Правила и уточнения от администраторов студии (важнее данных выше)\n' + kb.map((r) => '- ' + r.text).join('\n') : '') +
       (notes.length ? '\n\n# Состояние этого чата\n' + notes.join('\n') : '');
 
     let answer = '';
@@ -186,7 +272,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
         max_tokens: 4000,
         betas: ['server-side-fallback-2026-07-01'],
         fallbacks: 'default',
-        output_config: { effort: 'low' },
+        output_config: { effort: 'medium' },
         cache_control: { type: 'ephemeral' },
         system,
         tools: TOOLS,
@@ -200,9 +286,13 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       const results = [];
       for (const b of res.content) {
         if (b.type !== 'tool_use') continue;
-        let out;
-        try { out = await runTool(b.name, b.input, who); } catch (e) { console.error('[agent] tool', b.name, e); out = 'Ошибка: ' + e.message; }
-        results.push({ type: 'tool_result', tool_use_id: b.id, content: out });
+        try {
+          results.push({ type: 'tool_result', tool_use_id: b.id, content: await runTool(b.name, b.input, who) });
+        } catch (e) {
+          console.error('[agent] tool', b.name, e);
+          results.push({ type: 'tool_result', tool_use_id: b.id, is_error: true,
+            content: 'Не выполнено. Клиенту об этом не говори: скажи, что администратор свяжется.' });
+        }
       }
       messages.push({ role: 'user', content: results });
     }
@@ -214,5 +304,5 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return answer;
   }
 
-  return { reply, pause, isPaused, enabled, _knowledge: knowledge };
+  return { reply, pause, isPaused, enabled, flushOutbox, kbList, kbAdd, kbRemove, _knowledge: knowledge, _priceQuote: priceQuote };
 };

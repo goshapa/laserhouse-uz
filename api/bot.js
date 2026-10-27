@@ -195,11 +195,23 @@ const tpl = (str, vars) => str.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
 async function tg(method, body) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) throw new Error('TELEGRAM_BOT_TOKEN is not set');
-  const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  // сеть до api.telegram.org иногда не соединяется с первого раза — пробуем ещё дважды
+  let res;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(8000)
+      });
+      break;
+    } catch (e) {
+      if (attempt >= 3) throw e;
+      console.warn(`[tg] ${method}: ${e.message}, retry ${attempt}`);
+      await new Promise((r) => setTimeout(r, 500 * attempt));
+    }
+  }
   const json = await res.json().catch(() => ({ ok: false, description: 'bad json' }));
   if (!json.ok) console.error(`[tg] ${method}: ${json.description}`);
   return json;
@@ -629,6 +641,9 @@ async function handleMessage(msg) {
     return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
   }
 
+  // админ: обучение ИИ-администратора — /ai, /ai_learn, /ai_forget
+  if (/^\/ai(_learn|_forget)?\b/.test(text) && certs.isAdmin(ctx.from.id)) return handleAiAdmin(ctx, text);
+
   // админ: код сертификата, ответы мастеру «Создать сертификат», /create, /certs
   if (await certs.handleAdminText(ctx, text, msg)) return null;
 
@@ -665,6 +680,25 @@ async function handleMessage(msg) {
     await tg('sendMessage', { chat_id: ctx.chatId, text: t.text_fwd });
   }
   return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
+}
+
+/* Админ учит ИИ-администратора: правила хранятся в Redis и добавляются в его инструкцию */
+async function handleAiAdmin(ctx, text) {
+  const send = (t) => tg('sendMessage', { chat_id: ctx.chatId, text: t, parse_mode: 'HTML', disable_web_page_preview: true });
+  const learn = text.match(/^\/ai_learn(?:@\w+)?\s+([\s\S]+)/);
+  if (learn) {
+    const n = await agent.kbAdd(learn[1].trim(), ctx.from.first_name || String(ctx.from.id));
+    return send(`✅ Запомнил, правило №${n}. ИИ учитывает его со следующего сообщения клиента.`);
+  }
+  const forget = text.match(/^\/ai_forget(?:@\w+)?\s+(\d+)/);
+  if (forget) {
+    const r = await agent.kbRemove(Number(forget[1]));
+    return send(r ? `🗑 Удалил правило: ${esc(r.text)}` : 'Нет правила с таким номером. Список — /ai');
+  }
+  const list = await agent.kbList();
+  return send('🧠 <b>Обучение ИИ-администратора</b>\n\n' +
+    (list.length ? list.map((r, i) => `${i + 1}. ${esc(r.text)} <i>(${esc(r.by)}, ${r.at})</i>`).join('\n') : 'Правил пока нет.') +
+    '\n\nДобавить: <code>/ai_learn текст</code>\nНапример: <code>/ai_learn Пакетов нет, но при оплате курса из 6 процедур скидка 10%</code>\nУдалить: <code>/ai_forget 2</code>');
 }
 
 /* Сообщение в личке бизнес-аккаунта (бот подключён в Настройки → Telegram для бизнеса → Чат-боты).
@@ -818,6 +852,7 @@ module.exports = async (req, res) => {
     if (update.update_id != null && !(await store.once(`tg:u:${update.update_id}`, 3600).catch(() => true))) {
       return res.status(200).json({ ok: true });
     }
+    await agent.flushOutbox().catch((e) => console.error('[agent] outbox', e));
     if (update.callback_query) await handleCallback(update.callback_query);
     else if (update.message) await handleMessage(update.message);
     else if (update.business_message) await handleBusinessMessage(update.business_message);
