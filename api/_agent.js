@@ -272,7 +272,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
         max_tokens: 4000,
         betas: ['server-side-fallback-2026-07-01'],
         fallbacks: 'default',
-        output_config: { effort: 'medium' },
+        output_config: { effort: 'low' }, // точность сумм держит price_quote; medium давал ~26 с на ответ
         cache_control: { type: 'ephemeral' },
         system,
         tools: TOOLS,
