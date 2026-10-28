@@ -59,9 +59,15 @@ async function handleEvent(ev) {
   if (!(await store.once(`ig:m:${m.mid}`, 24 * 3600).catch(() => true))) return; // повтор вебхука
 
   if (m.is_echo) {
-    // наш собственный ответ — пропускаем; иначе это администратор ответил сам → ИИ молчит в этом чате
-    if (await store.get(`ig:own:${m.mid}`)) return;
-    return agent.pause('ig', ev.recipient.id);
+    // наш собственный ответ — пропускаем; иначе это администратор ответил сам → ИИ молчит в этом чате.
+    // Эхо нашего ответа может прийти раньше, чем мы запомнили его id, поэтому смотрим ещё и метку «отправляю»
+    // и перепроверяем через пару секунд.
+    const chat = ev.recipient.id;
+    const own = async () => !!(await store.get(`ig:own:${m.mid}`)) || !!(await store.get(`ig:sending:${chat}`));
+    if (await own()) return;
+    await new Promise((r) => setTimeout(r, 2500));
+    if (await own()) return;
+    return agent.pause('ig', chat);
   }
 
   const text = (m.text || '').trim();
@@ -70,6 +76,7 @@ async function handleEvent(ev) {
   const who = { channel: 'ig', chatId: ev.sender.id, label: await clientLabel(ev.sender.id) };
   const answer = await agent.reply(who, text);
   if (!answer) return;
+  await store.set(`ig:sending:${ev.sender.id}`, 1, 30);
   const sent = await ig('me/messages', { recipient: { id: ev.sender.id }, message: { text: answer.slice(0, 1000) } });
   if (sent.message_id) await store.set(`ig:own:${sent.message_id}`, 1, 24 * 3600);
 }
