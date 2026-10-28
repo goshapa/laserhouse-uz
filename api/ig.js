@@ -92,6 +92,16 @@ module.exports = async (req, res) => {
 
   try {
     for (const entry of body.entry || []) {
+      // форма события без текста переписки — видно в логах Vercel, что именно прислала Meta
+      console.log('[ig] entry', JSON.stringify({
+        object: body.object,
+        keys: Object.keys(entry),
+        changes: (entry.changes || []).map((c) => c.field),
+        messaging: (entry.messaging || []).map((ev) => ({
+          keys: Object.keys(ev),
+          message: ev.message && { text: !!ev.message.text, echo: !!ev.message.is_echo, attachments: !!ev.message.attachments }
+        }))
+      }));
       for (const ev of entry.messaging || []) await handleEvent(ev);
     }
   } catch (e) {
