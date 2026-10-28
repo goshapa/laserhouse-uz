@@ -102,6 +102,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 - Отвечай на языке клиента: русский или узбекский (латиница). Узбекские названия зон и аппаратов — как в данных ниже, цены те же.
 - Опирайся только на данные ниже. Чего нет в данных (точное свободное время, акции, которых нет в ценах, медицинские диагнозы) — не выдумывай: скажи, что уточнит администратор, и вызови call_admin.
 - Цены называй точно по прайсу и всегда говори, на каком аппарате эта цена. Если девушка не выбрала аппарат — дай цену и на Candela/DEKA, и на HairBoss.
+- Если клиент просит прайс или «все цены» — отправь фото прайса через send_price_photo (мужчине — только мужской прайс) и коротко подпиши его; весь прайс текстом не перечисляй. Если подходящего фото нет — назови цены текстом.
 - Сумму нескольких зон считай только через price_quote, не в уме. Напоминай, что нужен курс 6–10 процедур с интервалом 4–6 недель.
 - Прежде чем сказать, что чего-то нет (зоны, комплекса, услуги), проверь все три прайса: у женщин Candela/DEKA и HairBoss, у мужчин Candela.
 - Никогда не пиши клиенту о технических ошибках, сбоях, инструментах и о том, как ты устроен. Если что-то не получилось, просто скажи, что администратор свяжется.
@@ -123,7 +124,25 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 # Данные студии
 `;
 
+  /* фото прайсов студии лежат на сайте; ключ → файл в assets/img/prices */
+  const PRICE_PHOTOS = {
+    men_candela: { file: 'men-candela.png', about: 'мужской прайс, Candela — только для мужчин' }
+  };
+  const photoUrl = (key) => `https://laserhouse.uz/assets/img/prices/${PRICE_PHOTOS[key].file}`;
+
   const TOOLS = [
+    {
+      name: 'send_price_photo',
+      description: 'Отправить клиенту фото прайса студии следом за твоим ответом. Доступные прайсы: ' +
+        Object.entries(PRICE_PHOTOS).map(([k, p]) => `${k} — ${p.about}`).join('; ') + '.',
+      strict: true,
+      input_schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: { list: { type: 'string', enum: Object.keys(PRICE_PHOTOS) } },
+        required: ['list']
+      }
+    },
     {
       name: 'price_quote',
       description: 'Точная цена одной или нескольких зон на выбранном аппарате и итоговая сумма за одну процедуру. Вызывай для любой суммы нескольких зон и когда сомневаешься в цене.',
@@ -232,6 +251,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   async function runTool(name, input, who) {
     if (name === 'price_quote') return priceQuote(input);
+    if (name === 'send_price_photo') {
+      who.photos = [...new Set([...(who.photos || []), photoUrl(input.list)])];
+      return 'Фото прайса уйдёт клиенту сразу после твоего ответа. Не перечисляй весь прайс текстом.';
+    }
     const src = `${CHANNELS[who.channel]} · ${who.label}`;
     if (name === 'submit_booking') {
       if (await wasSent('booking', who)) {
@@ -300,9 +323,11 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       messages.push({ role: 'user', content: results });
     }
 
-    if (!answer) return null;
+    const photos = who.photos || [];
+    if (!answer && !photos.length) return null;
     // в память кладём только текст диалога: короче и не тянет блоки инструментов между сессиями
-    const next = [...history, { role: 'user', content: text }, { role: 'assistant', content: answer }].slice(-HISTORY_LIMIT);
+    const remembered = [answer, ...photos.map((u) => `[отправлено фото прайса: ${u.split('/').pop()}]`)].filter(Boolean).join('\n');
+    const next = [...history, { role: 'user', content: text }, { role: 'assistant', content: remembered }].slice(-HISTORY_LIMIT);
     await store.set(histKey(who.channel, who.chatId), next, HISTORY_TTL);
     return answer;
   }

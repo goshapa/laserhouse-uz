@@ -75,10 +75,16 @@ async function handleEvent(ev) {
 
   const who = { channel: 'ig', chatId: ev.sender.id, label: await clientLabel(ev.sender.id) };
   const answer = await agent.reply(who, text);
-  if (!answer) return;
+  if (answer == null) return;
   await store.set(`ig:sending:${ev.sender.id}`, 1, 30);
-  const sent = await ig('me/messages', { recipient: { id: ev.sender.id }, message: { text: answer.slice(0, 1000) } });
-  if (sent.message_id) await store.set(`ig:own:${sent.message_id}`, 1, 24 * 3600);
+  const messages = [
+    ...(answer ? [{ text: answer.slice(0, 1000) }] : []),
+    ...(who.photos || []).map((url) => ({ attachment: { type: 'image', payload: { url } } }))
+  ];
+  for (const message of messages) {
+    const sent = await ig('me/messages', { recipient: { id: ev.sender.id }, message });
+    if (sent.message_id) await store.set(`ig:own:${sent.message_id}`, 1, 24 * 3600);
+  }
 }
 
 module.exports = async (req, res) => {

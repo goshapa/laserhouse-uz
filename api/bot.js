@@ -719,13 +719,11 @@ async function handleBusinessMessage(msg) {
   } catch (e) {
     console.error('[agent] tg reply failed', e);
   }
-  if (!answer) return null;
-  return tg('sendMessage', {
-    business_connection_id: msg.business_connection_id,
-    chat_id: msg.chat.id,
-    text: answer.slice(0, 4000),
-    disable_web_page_preview: true
-  });
+  if (answer == null) return null;
+  const to = { business_connection_id: msg.business_connection_id, chat_id: msg.chat.id };
+  if (answer) await tg('sendMessage', { ...to, text: answer.slice(0, 4000), disable_web_page_preview: true });
+  for (const photo of who.photos || []) await tg('sendPhoto', { ...to, photo });
+  return null;
 }
 
 async function handleCallback(cq) {
