@@ -23,16 +23,16 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   /* ---------- знания ---------- */
   function knowledge() {
     const ru = T.ru;
-    const branches = [1, 2, 3].map((n) => {
-      const b = BRANCHES[n];
-      return `- ${b.city === 's' ? 'Самарканд' : 'Ташкент'} · ${b.ru.name}: ${b.ru.addr} (ориентир: ${b.ru.land}), тел. ${b.phone}` +
+    // Самарканд ведёт свой Instagram — ИИ консультирует только по ташкентским студиям
+    const branches = [1, 2, 3].map((n) => BRANCHES[n]).filter((b) => b.city !== 's').map((b) => {
+      return `- Ташкент · ${b.ru.name}: ${b.ru.addr} (ориентир: ${b.ru.land}), тел. ${b.phone}` +
         (b.booking ? `, онлайн-запись: ${b.booking}` : '') + `, маршрут: ${b.map}`;
     }).join('\n');
     const faq = LH.faq.map((f) => `В: ${f.q.ru}\nО: ${f.a.ru}`).join('\n\n');
     const prep = LH.prep.map((p) => `${p.ru}:\n${p.items.ru.map((x) => '- ' + x).join('\n')}`).join('\n\n');
     return [
       '# Студия',
-      strip(ru.menu),
+      strip(ru.menu).replace(/ и Самарканде/g, ''),
       '',
       '# Аппараты',
       strip(ru.lasers),
@@ -94,7 +94,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     ].filter(Boolean).join('\n');
   }
 
-  const SYSTEM = `Ты — администратор студии лазерной эпиляции Laser House (Ташкент и Самарканд) и отвечаешь клиентам в личных сообщениях ${'{CHANNEL}'}.
+  const SYSTEM = `Ты — администратор студии лазерной эпиляции Laser House в Ташкенте и отвечаешь клиентам в личных сообщениях ${'{CHANNEL}'}.
+Ты консультируешь только по двум студиям в Ташкенте. Сам не упоминай Самарканд и другие города. Если клиент прямо спросит про Самарканд, коротко ответь, что здесь консультируют по студиям в Ташкенте, а у самаркандского филиала свой Instagram.
 
 Как общаться:
 - Пиши тепло, коротко и по делу, как живой администратор в мессенджере: 1–4 коротких абзаца, без markdown (никаких *, #, таблиц), можно 1–2 уместных эмодзи.
@@ -146,7 +147,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
         properties: {
           name: { type: 'string', description: 'Имя клиента' },
           phone: { type: 'string', description: 'Телефон клиента, как он его написал' },
-          branch: { type: 'string', enum: ['Ц-1 (Ташкент)', 'Нукус (Ташкент)', 'Самарканд', 'Не выбран'] },
+          branch: { type: 'string', enum: ['Ц-1 (Ташкент)', 'Нукус (Ташкент)', 'Не выбран'] },
           zones: { type: 'string', description: 'Зоны и аппарат, если известны; пустая строка, если нет' },
           preferred_time: { type: 'string', description: 'Удобные день/время; пустая строка, если нет' },
           comment: { type: 'string', description: 'Всё важное для администратора: для кого, вопросы, расчёт суммы; пустая строка, если нет' }
