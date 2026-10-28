@@ -377,7 +377,7 @@ LH.uz = {
   final_title_html: 'O‘zingni asra, <em>jonim</em>.',
   final_sub: 'Seni studiyada kutamiz. Onlayn, Telegram yoki telefon orqali yozil.',
   footer_tag: 'Toshkent va Samarqanddagi lazer epilyatsiyasi studiyalari tarmog‘i',
-  footer_nav: 'Navigatsiya', footer_contacts: 'Kontaktlar', footer_note: 'Narxlar ma’lumot uchun va ommaviy oferta emas.',
+  footer_nav: 'Navigatsiya', footer_contacts: 'Kontaktlar', footer_note: 'Narxlar ma’lumot uchun va ommaviy oferta emas.', footer_privacy: 'Maxfiylik siyosati',
   bar_book: 'Yozilish',
   hint_body_all: 'Maslahat: «Butun tana» arzonroq — {sum} tejaysiz',
   other_device: 'Shu zonalar {device}da: {sum}',

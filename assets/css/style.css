@@ -430,6 +430,8 @@ details[open] > summary .plus::after { transform: translate(-50%, -50%) rotate(0
 .footer__inner > div:not(.footer__brand) a { display: block; padding: 4px 0; font-size: 14px; transition: color .3s; width: fit-content; }
 .footer__inner > div:not(.footer__brand) a:hover { color: var(--gold); }
 .footer__bottom { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--muted); padding-top: 28px; border-top: 1px solid var(--line); }
+.footer__bottom a { color: inherit; transition: color .3s; }
+.footer__bottom a:hover { color: var(--gold); }
 
 /* ---------- mobile bar ---------- */
 .mbar { display: none; }
