@@ -274,7 +274,7 @@ const certs = require('./_certs')({ tg, esc, money, btn, adminChats, userLink, b
 
 /* ---------- ИИ-администратор: личка @laserhouse_uz (Telegram Business) и Instagram (api/ig.js) ---------- */
 const store = require('./_store');
-const agent = require('./_agent')({ LH, BRANCHES, priceText, T, notifyAdmins, esc });
+const agent = require('./_agent')({ LH, notifyAdmins, esc });
 
 /* ---------- запись ----------
    Состояние: l.c.b.x.d.m.q.g.k.w
@@ -713,16 +713,18 @@ async function handleBusinessMessage(msg) {
   if (!agent.enabled() || await agent.isPaused('tg', msg.chat.id)) return null;
   const who = { channel: 'tg', chatId: msg.chat.id, label: userLink(msg.from || {}) };
   await tg('sendChatAction', { business_connection_id: msg.business_connection_id, chat_id: msg.chat.id, action: 'typing' });
-  let answer = null;
+  let parts = null;
   try {
-    answer = await agent.reply(who, text);
+    parts = await agent.reply(who, text);
   } catch (e) {
     console.error('[agent] tg reply failed', e);
   }
-  if (answer == null) return null;
+  if (parts == null) return null;
   const to = { business_connection_id: msg.business_connection_id, chat_id: msg.chat.id };
-  if (answer) await tg('sendMessage', { ...to, text: answer.slice(0, 4000), disable_web_page_preview: true });
-  for (const photo of who.photos || []) await tg('sendPhoto', { ...to, photo });
+  for (const p of parts) {
+    if (p.photo) await tg('sendPhoto', { ...to, photo: p.photo });
+    else await tg('sendMessage', { ...to, text: p.text.slice(0, 4000), disable_web_page_preview: true });
+  }
   return null;
 }
 

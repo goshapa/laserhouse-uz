@@ -74,13 +74,13 @@ async function handleEvent(ev) {
   if (!text || !agent.enabled() || await agent.isPaused('ig', ev.sender.id)) return;
 
   const who = { channel: 'ig', chatId: ev.sender.id, label: await clientLabel(ev.sender.id) };
-  const answer = await agent.reply(who, text);
-  if (answer == null) return;
-  await store.set(`ig:sending:${ev.sender.id}`, 1, 30);
-  const messages = [
-    ...(answer ? [{ text: answer.slice(0, 1000) }] : []),
-    ...(who.photos || []).map((url) => ({ attachment: { type: 'image', payload: { url } } }))
-  ];
+  const parts = await agent.reply(who, text);
+  if (parts == null) return;
+  await store.set(`ig:sending:${ev.sender.id}`, 1, 60);
+  // лимит Instagram — 1000 байт на сообщение, по-русски это около 500 букв
+  const messages = parts.flatMap((p) => (p.photo
+    ? [{ attachment: { type: 'image', payload: { url: p.photo } } }]
+    : agent.splitText(p.text, 1000).map((t) => ({ text: t }))));
   for (const message of messages) {
     const sent = await ig('me/messages', { recipient: { id: ev.sender.id }, message });
     if (sent.message_id) await store.set(`ig:own:${sent.message_id}`, 1, 24 * 3600);

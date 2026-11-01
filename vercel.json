@@ -1,11 +1,11 @@
 {
   "functions": {
     "api/bot.js": {
-      "includeFiles": "assets/js/data.js",
+      "includeFiles": "{assets/js/data.js,api/_script.md}",
       "maxDuration": 60
     },
     "api/ig.js": {
-      "includeFiles": "assets/js/data.js",
+      "includeFiles": "{assets/js/data.js,api/_script.md}",
       "maxDuration": 60
     }
   },
