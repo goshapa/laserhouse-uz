@@ -171,8 +171,8 @@ LH.prep = [
   {
     ru: 'За 1–2 дня', uz: '1–2 kun oldin',
     items: {
-      ru: ['Сбрейте волосы в нужных зонах — за 1–2 дня или в день процедуры', 'Именно сбрейте: не выщипывайте и не используйте воск'],
-      uz: ['Kerakli zonalardagi tuklarni 1–2 kun oldin yoki muolaja kuni qirib oling', 'Aynan qirib oling: yulmang va mum ishlatmang']
+      ru: ['Сбрейте волосы в нужных зонах — желательно за 1–2 дня до визита: длина волос должна быть не больше 1 мм', 'Пушковые волосы на лице брить не нужно', 'Именно сбрейте: не выщипывайте и не используйте воск'],
+      uz: ['Tashrifdan iloji boricha 1–2 kun oldin kerakli zonalardagi tuklarni qirib oling: tuk uzunligi 1 mm dan oshmasligi kerak', 'Yuzdagi mayin tuklarni qirish shart emas', 'Aynan qirib oling: yulmang va mum ishlatmang']
     }
   },
   {
@@ -199,8 +199,8 @@ LH.prep = [
 ];
 
 LH.contra = {
-  ru: ['Псориаз и другие повреждения кожи', 'Беременность и лактация', 'Инфекционные заболевания кожи', 'Онкологические заболевания', 'Сахарный диабет', 'Приём тетрациклиновых антибиотиков, системных ретиноидов и стероидов', 'Аутоиммунные заболевания: красная волчанка, склеродермия, диабет 1 типа, аутоиммунный тиреоидит, рассеянный склероз, полиневрит, болезнь Аддисона, дерматомиозит, тромбоцитопеническая пурпура, витилиго, ревматоидный артрит', 'Любые заболевания в острой фазе'],
-  uz: ['Psoriaz va terining boshqa shikastlanishlari', 'Homiladorlik va emizish davri', 'Terining yuqumli kasalliklari', 'Onkologik kasalliklar', 'Qandli diabet', 'Tetratsiklin guruhi antibiotiklari, tizimli retinoidlar va steroidlar qabul qilish', 'Autoimmun kasalliklar: qizil yuguruk, sklerodermiya, 1-tur diabet, autoimmun tireoidit, tarqoq skleroz, polinevrit, Addison kasalligi, dermatomiozit, trombotsitopenik purpura, vitiligo, revmatoid artrit', 'O‘tkir bosqichdagi har qanday kasallik']
+  ru: ['Псориаз и другие повреждения кожи', 'Беременность', 'Инфекционные заболевания кожи', 'Онкологические заболевания', 'Сахарный диабет', 'Приём тетрациклиновых антибиотиков, системных ретиноидов и стероидов', 'Аутоиммунные заболевания: красная волчанка, склеродермия, диабет 1 типа, аутоиммунный тиреоидит, рассеянный склероз, полиневрит, болезнь Аддисона, дерматомиозит, тромбоцитопеническая пурпура, витилиго, ревматоидный артрит', 'Любые заболевания в острой фазе'],
+  uz: ['Psoriaz va terining boshqa shikastlanishlari', 'Homiladorlik', 'Terining yuqumli kasalliklari', 'Onkologik kasalliklar', 'Qandli diabet', 'Tetratsiklin guruhi antibiotiklari, tizimli retinoidlar va steroidlar qabul qilish', 'Autoimmun kasalliklar: qizil yuguruk, sklerodermiya, 1-tur diabet, autoimmun tireoidit, tarqoq skleroz, polinevrit, Addison kasalligi, dermatomiozit, trombotsitopenik purpura, vitiligo, revmatoid artrit', 'O‘tkir bosqichdagi har qanday kasallik']
 };
 
 LH.faq = [
@@ -214,8 +214,8 @@ LH.faq = [
   {
     q: { ru: 'Сколько процедур понадобится?', uz: 'Nechta muolaja kerak bo‘ladi?' },
     a: {
-      ru: 'В среднем 6–10 процедур с интервалом 4–6 недель. Лазерная эпиляция делается только курсом: нужно «поймать» все волны роста волос. После каждой процедуры мастер оценивает, как уходят волосы, и говорит, сколько осталось. После курса — 1–2 поддерживающие процедуры раз в полгода-год.',
-      uz: 'O‘rtacha 4–6 hafta oraliq bilan 6–10 muolaja. Lazer epilyatsiyasi faqat kurs bilan qilinadi: tuklar o‘sishining barcha to‘lqinlarini «ushlash» kerak. Har muolajadan keyin usta natijani baholab, yana nechta qolganini aytadi. Kursdan so‘ng — yarim yilda-yilda 1–2 ta qo‘llab-quvvatlovchi muolaja.'
+      ru: 'На Candela и DEKA — 5–7 процедур с интервалом 5–7 недель, на HairBoss — 7–10 процедур с интервалом 3–4 недели. Лазерная эпиляция делается только курсом: нужно «поймать» все волны роста волос. После каждой процедуры мастер оценивает, как уходят волосы, и говорит, сколько осталось. После курса рекомендуется 1–2 поддерживающие процедуры в год.',
+      uz: 'Candela va DEKA’da — 5–7 hafta oraliq bilan 5–7 muolaja, HairBoss’da — 3–4 hafta oraliq bilan 7–10 muolaja. Lazer epilyatsiyasi faqat kurs bilan qilinadi: tuklar o‘sishining barcha to‘lqinlarini «ushlash» kerak. Har muolajadan keyin usta natijani baholab, yana nechta qolganini aytadi. Kursdan keyin yiliga 1–2 ta qo‘llab-quvvatlovchi muolaja tavsiya etiladi.'
     }
   },
   {
@@ -228,15 +228,15 @@ LH.faq = [
   {
     q: { ru: 'Когда лучше начинать курс?', uz: 'Kursni qachon boshlagan ma’qul?' },
     a: {
-      ru: 'Идеально — осенью: в холода проще защищать кожу от солнца, а к лету курс будет закончен. Но начать можно и весной, и летом — главное SPF не ниже 30 на открытые зоны и никакого активного солнца за неделю до и после процедуры.',
-      uz: 'Ideal vaqt — kuz: sovuqda terini quyoshdan himoya qilish osonroq, yozga kelib esa kurs tugaydi. Lekin bahor va yozda ham boshlash mumkin — asosiysi ochiq zonalarga kamida SPF 30 surting va muolajadan bir hafta oldin va keyin quyoshda toblanmang.'
+      ru: 'Идеально — осенью: в холода проще защищать кожу от солнца, а к лету курс будет закончен. Но начать можно и весной, и летом — главное SPF не ниже 30 на открытые зоны и никакого активного солнца за 2 недели до процедуры и неделю после.',
+      uz: 'Ideal vaqt — kuz: sovuqda terini quyoshdan himoya qilish osonroq, yozga kelib esa kurs tugaydi. Lekin bahor va yozda ham boshlash mumkin — asosiysi ochiq zonalarga kamida SPF 30 surting va muolajadan 2 hafta oldin va bir hafta keyin quyoshda toblanmang.'
     }
   },
   {
     q: { ru: 'Можно ли загорать и ехать в отпуск во время курса?', uz: 'Kurs davomida quyoshda toblanish va ta’tilga chiqish mumkinmi?' },
     a: {
-      ru: 'Можно. Загорать — не раньше чем через 7–10 дней после процедуры, неделю мажьте зоны пантенолом. В отпуске: SPF 30+ на тело и 50+ на лицо, загар по 15–20 минут, без солнца с 12:00 до 16:00. После возвращения дайте коже отдохнуть 10–14 дней, а если краснота от загара не сошла — перенесите процедуру на 3–5 дней.',
-      uz: 'Mumkin. Quyoshda toblanish — muolajadan kamida 7–10 kun o‘tib, bir hafta davomida zonalarga pantenol surting. Ta’tilda: tanaga SPF 30+, yuzga SPF 50+, 15–20 daqiqadan toblaning, 12:00 dan 16:00 gacha quyoshga chiqmang. Qaytgach teriga 10–14 kun dam bering, qizarish ketmagan bo‘lsa — muolajani 3–5 kunga suring.'
+      ru: 'Можно. Загорать — не раньше чем через 7–10 дней после процедуры, неделю мажьте зоны пантенолом. В отпуске: SPF 30+ на тело и 50+ на лицо, загар по 15–20 минут, без солнца с 12:00 до 16:00. После возвращения дайте коже отдохнуть минимум 14 дней, а если краснота от загара не сошла — перенесите процедуру на 3–5 дней.',
+      uz: 'Mumkin. Quyoshda toblanish — muolajadan kamida 7–10 kun o‘tib, bir hafta davomida zonalarga pantenol surting. Ta’tilda: tanaga SPF 30+, yuzga SPF 50+, 15–20 daqiqadan toblaning, 12:00 dan 16:00 gacha quyoshga chiqmang. Qaytgach teriga kamida 14 kun dam bering, qizarish ketmagan bo‘lsa — muolajani 3–5 kunga suring.'
     }
   },
   {
@@ -265,6 +265,13 @@ LH.faq = [
     a: {
       ru: 'Все три аппарата — последних моделей, и каждый работает с разными типами кожи и волос. Candela — золотой стандарт лазерной эпиляции. DEKA Motus PRO — итальянская платформа с александритовым и неодимовым лазерами. HairBoss X-Fest — универсальный и комфортный немецкий диод. Окончательный выбор мастер делает на консультации — под ваш фототип и зону.',
       uz: 'Uchala apparat ham eng so‘nggi modellar va har biri turli teri va tuk turlari bilan ishlaydi. Candela — lazer epilyatsiyasining oltin standarti. DEKA Motus PRO — aleksandrit va neodim lazerli italyan platformasi. HairBoss X-Fest — universal va qulay nemis diodi. Yakuniy tanlovni usta konsultatsiyada fototipingiz va zonaga qarab qiladi.'
+    }
+  },
+  {
+    q: { ru: 'Можно ли при беременности и грудном вскармливании?', uz: 'Homiladorlik va emizish davrida mumkinmi?' },
+    a: {
+      ru: 'Беременность — абсолютное противопоказание: в это время мы не проводим процедуры ни на одном аппарате. При грудном вскармливании эпиляцию делать можно: она не влияет на качество молока и организм, луч проникает только до волосяного фолликула. Начинать рекомендуется после 6-го месяца ГВ. Зоны груди и подмышек делать не рекомендуется: кожа там в этот период может быть более чувствительной, что увеличивает риск раздражения, покраснения или болезненности.',
+      uz: 'Homiladorlik — mutlaq qarshi ko‘rsatma: bu davrda hech qaysi apparatda muolaja o‘tkazmaymiz. Emizish davrida epilyatsiya qilish mumkin: u sut sifatiga va organizmga ta’sir qilmaydi, lazer nuri faqat tuk follikulasigacha yetib boradi. Muolajalarni emizishning 6-oyidan keyin boshlash tavsiya etiladi. Ko‘krak va qo‘ltiq osti zonalarini qilish tavsiya etilmaydi: bu davrda u yerdagi teri sezgirroq bo‘lishi mumkin, bu esa ta’sirlanish, qizarish yoki og‘riq xavfini oshiradi.'
     }
   }
 ];
@@ -334,15 +341,15 @@ LH.uz = {
   for_her: 'Ayollar uchun', for_him: 'Erkaklar uchun', dev_diode: 'Diod HairBoss', dev_alex: 'Aleksandrit Candela',
   calc_selected: 'Tanlangan zonalar', calc_empty: 'Zonalarni tanlang — summa shu yerda paydo bo‘ladi',
   calc_total: 'Bir muolaja', calc_time: 'Taxminiy vaqt', calc_clear: 'Tozalash', calc_book: 'Shu zonalarga yozilish',
-  calc_note: 'Kurs — 4–6 hafta oraliq bilan 6–10 muolaja. Aktual narxni administratordan aniqlang.',
+  calc_note: 'Kurs: Candela va DEKA — 5–7 hafta oraliq bilan 5–7 muolaja, HairBoss — 3–4 hafta oraliq bilan 7–10 muolaja. Aktual narxni administratordan aniqlang.',
   min: 'daq', hour: 'soat',
   course_kicker: 'Qanday ishlaydi',
   course_title_html: 'Konsultatsiyadan<br><em>silliq teri</em>gacha',
   step1_t: 'Konsultatsiya va tanlov', step1_d: 'Usta fototip, teri va tuklarni baholaydi, apparat va parametrlarni tanlaydi.',
   step2_t: 'Muolaja', step2_d: 'Zonalarga qarab 10 daqiqadan 2 soat 30 daqiqagacha. Zamonaviy sovutish, faqat yengil iliqlik.',
   step3_t: '7–10 kunda natija', step3_d: 'Tuklar to‘kiladi, sekinroq va ingichkaroq o‘sadi.',
-  step4_t: '6–10 muolajalik kurs', step4_d: '4–6 hafta oraliq: lazer o‘sish bosqichidagi follikulalarni «ushlaydi».',
-  step5_t: 'Qo‘llab-quvvatlash', step5_d: 'Kursdan keyin — yarim yilda-yilda 1–2 muolaja.',
+  step4_t: '5–10 muolajalik kurs', step4_d: 'Candela va DEKA — 5–7 hafta oraliq bilan 5–7 muolaja, HairBoss — 3–4 hafta oraliq bilan 7–10 muolaja: lazer o‘sish bosqichidagi follikulalarni «ushlaydi».',
+  step5_t: 'Qo‘llab-quvvatlash', step5_d: 'Kursdan keyin — yiliga 1–2 ta qo‘llab-quvvatlovchi muolaja.',
   growth_title: 'Har muolajadan keyin tuklar kamayadi', growth_note: 'Sxematik ko‘rinish. Natija individual.', session: 'muolaja',
   pain_kicker: 'Eng ko‘p beriladigan savol',
   pain_title_html: '«Bu <em>og‘riqlimi</em>?»',
