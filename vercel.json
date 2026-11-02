@@ -7,15 +7,31 @@
     "api/ig.js": {
       "includeFiles": "{assets/js/data.js,api/_script.md}",
       "maxDuration": 60
+    },
+    "api/ai.js": {
+      "includeFiles": "{assets/js/data.js,api/_script.md}",
+      "maxDuration": 60
     }
   },
   "rewrites": [
-    { "source": "/privacy", "destination": "/privacy.html" }
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/ai",
+      "destination": "/ai.html"
+    }
   ],
   "redirects": [
     {
       "source": "/:path((?!api/).*)",
-      "has": [{ "type": "host", "value": "laserhouse.vercel.app" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "laserhouse.vercel.app"
+        }
+      ],
       "destination": "https://laserhouse.uz/:path",
       "permanent": true
     }
@@ -45,6 +61,19 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/ai",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
         }
       ]
     }

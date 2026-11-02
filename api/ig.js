@@ -71,7 +71,7 @@ async function handleEvent(ev) {
   }
 
   const text = (m.text || '').trim();
-  if (!text || !agent.enabled() || await agent.isPaused('ig', ev.sender.id)) return;
+  if (!text || !(await agent.active('ig', ev.sender.id))) return;
 
   const who = { channel: 'ig', chatId: ev.sender.id, label: await clientLabel(ev.sender.id) };
   const parts = await agent.reply(who, text);

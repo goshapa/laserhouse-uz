@@ -276,6 +276,7 @@ const certs = require('./_certs')({ tg, esc, money, btn, adminChats, userLink, b
 
 /* ---------- ИИ-администратор: личка @laserhouse_uz (Telegram Business) и Instagram (api/ig.js) ---------- */
 const store = require('./_store');
+const session = require('./_session');
 const agent = require('./_agent')({ LH, BRANCHES, priceText, T, notifyAdmins, esc });
 
 /* ---------- запись ----------
@@ -643,8 +644,9 @@ async function handleMessage(msg) {
     return show(ctx, t.menu, menuRows(l, certs.isAdmin(ctx.from.id)));
   }
 
-  // админ: обучение ИИ-администратора — /ai, /ai_learn, /ai_forget
+  // админ: обучение ИИ-администратора — /ai, /ai_learn, /ai_forget; панель управления — /panel
   if (/^\/ai(_learn|_forget)?\b/.test(text) && certs.isAdmin(ctx.from.id)) return handleAiAdmin(ctx, text);
+  if (/^\/panel\b/.test(text) && certs.isAdmin(ctx.from.id)) return handlePanelLogin(ctx);
 
   // админ: код сертификата, ответы мастеру «Создать сертификат», /create, /certs
   if (await certs.handleAdminText(ctx, text, msg)) return null;
@@ -700,7 +702,17 @@ async function handleAiAdmin(ctx, text) {
   const list = await agent.kbList();
   return send('🧠 <b>Обучение ИИ-администратора</b>\n\n' +
     (list.length ? list.map((r, i) => `${i + 1}. ${esc(r.text)} <i>(${esc(r.by)}, ${r.at})</i>`).join('\n') : 'Правил пока нет.') +
-    '\n\nДобавить: <code>/ai_learn текст</code>\nНапример: <code>/ai_learn Пакетов нет, но при оплате курса из 6 процедур скидка 10%</code>\nУдалить: <code>/ai_forget 2</code>');
+    '\n\nДобавить: <code>/ai_learn текст</code>\nНапример: <code>/ai_learn Пакетов нет, но при оплате курса из 6 процедур скидка 10%</code>\nУдалить: <code>/ai_forget 2</code>\nВсе настройки ИИ — в панели: /panel');
+}
+
+/* Вход в панель /ai: одноразовая ссылка. Токен во фрагменте URL — он не попадает на сервер при открытии и в превью ссылки */
+async function handlePanelLogin(ctx) {
+  const token = await session.issueLogin({ id: String(ctx.from.id), name: ctx.from.first_name || String(ctx.from.id) });
+  return tg('sendMessage', {
+    chat_id: ctx.chatId,
+    text: '🔐 Вход в панель ИИ-администратора. Ссылка одноразовая и действует 10 минут, никому её не пересылайте.',
+    reply_markup: { inline_keyboard: [[{ text: 'Открыть панель', url: `${SITE}/ai#login=${token}` }]] }
+  });
 }
 
 /* Сообщение в личке бизнес-аккаунта (бот подключён в Настройки → Telegram для бизнеса → Чат-боты).
@@ -712,7 +724,7 @@ async function handleBusinessMessage(msg) {
 
   const text = (msg.text || msg.caption || '').trim();
   if (!text) return null; // голосовые, стикеры, фото без подписи — отвечает человек
-  if (!agent.enabled() || await agent.isPaused('tg', msg.chat.id)) return null;
+  if (!(await agent.active('tg', msg.chat.id))) return null;
   const who = { channel: 'tg', chatId: msg.chat.id, label: userLink(msg.from || {}) };
   await tg('sendChatAction', { business_connection_id: msg.business_connection_id, chat_id: msg.chat.id, action: 'typing' });
   let parts = null;
@@ -870,4 +882,4 @@ module.exports = async (req, res) => {
   return res.status(200).json({ ok: true });
 };
 
-module.exports._internal = { handleMessage, handleCallback, handleBusinessMessage, parseBook, bookBack, priceText, T, agent, notifyAdmins, esc };
+module.exports._internal = { handleMessage, handleCallback, handleBusinessMessage, parseBook, bookBack, priceText, T, agent, notifyAdmins, esc, adminChats };

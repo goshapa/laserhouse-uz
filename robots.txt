@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /ai
 
 Sitemap: https://laserhouse.uz/sitemap.xml
