@@ -276,7 +276,7 @@ const certs = require('./_certs')({ tg, esc, money, btn, adminChats, userLink, b
 
 /* ---------- ИИ-администратор: личка @laserhouse_uz (Telegram Business) и Instagram (api/ig.js) ---------- */
 const store = require('./_store');
-const agent = require('./_agent')({ LH, notifyAdmins, esc });
+const agent = require('./_agent')({ LH, BRANCHES, priceText, T, notifyAdmins, esc });
 
 /* ---------- запись ----------
    Состояние: l.c.b.x.d.m.q.g.k.w
