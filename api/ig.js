@@ -1,18 +1,26 @@
-/* Laser House — ИИ-администратор в Instagram Direct (Instagram API with Instagram Login).
+/* Laser House — ИИ-администратор в Instagram Direct (Instagram API with Unified Login или with Instagram Login).
    Вебхук: https://laserhouse.uz/api/ig  (поле подписки: messages)
 
    Переменные окружения:
-     IG_ACCESS_TOKEN  — долгоживущий токен Instagram-аккаунта (Meta App → Instagram → API setup → Generate token)
-     IG_APP_SECRET    — секрет приложения Instagram (им подписаны вебхуки)
+     IG_ACCOUNT_ID    — ID Instagram-аккаунта. Задан — работаем через Unified Login (graph.facebook.com),
+                        не задан — через Instagram Login (graph.instagram.com)
+     IG_ACCESS_TOKEN  — токен из Meta App → Instagram API → Generate token
+     IG_APP_SECRET    — секрет, которым подписаны вебхуки: при Unified Login «Секрет приложения» из настроек,
+                        при Instagram Login «Секрет приложения Instagram»
      IG_VERIFY_TOKEN  — любая строка; та же вписывается в Meta при настройке вебхука
-     IG_API_VERSION   — версия Graph API, по умолчанию v23.0 */
+     IG_API_VERSION   — версия Graph API, по умолчанию v26.0 при Unified Login и v23.0 при Instagram Login */
 'use strict';
 
 const crypto = require('crypto');
 const store = require('./_store');
 const { agent, notifyAdmins, esc } = require('./bot')._internal;
 
-const api = (p) => `https://graph.instagram.com/${process.env.IG_API_VERSION || 'v23.0'}/${p}`;
+const unified = () => !!process.env.IG_ACCOUNT_ID;
+const api = (p) => (unified()
+  ? `https://graph.facebook.com/${process.env.IG_API_VERSION || 'v26.0'}/${p}`
+  : `https://graph.instagram.com/${process.env.IG_API_VERSION || 'v23.0'}/${p}`);
+// при Unified Login /me — это системный пользователь, а не аккаунт Instagram
+const messagesPath = () => (unified() ? `${process.env.IG_ACCOUNT_ID}/messages` : 'me/messages');
 
 async function ig(pathPart, body) {
   const res = await fetch(api(pathPart), {
@@ -82,7 +90,7 @@ async function handleEvent(ev) {
     ? [{ attachment: { type: 'image', payload: { url: p.photo } } }]
     : agent.splitText(p.text, 1000).map((t) => ({ text: t }))));
   for (const message of messages) {
-    const sent = await ig('me/messages', { recipient: { id: ev.sender.id }, message });
+    const sent = await ig(messagesPath(), { recipient: { id: ev.sender.id }, message });
     if (sent.message_id) await store.set(`ig:own:${sent.message_id}`, 1, 24 * 3600);
   }
 }
