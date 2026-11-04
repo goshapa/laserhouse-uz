@@ -165,6 +165,9 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const DEVICE_NAME = { candela_deka: 'Candela/DEKA', hairboss: 'HairBoss X-Fest' };
   const money = (n) => Number(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 
+  // одна зона под разными ключами в прайсах аппаратов: модель может выбрать любой
+  const ZONE_ALIASES = { lip: 'lip_m', lip_m: 'lip', bikini_deep: 'bikini_deep_m', bikini_deep_m: 'bikini_deep' };
+
   function priceQuote({ sex, device, zones }) {
     if (sex === 'men' && device !== 'candela_deka') return 'Для мужчин работает только Candela — посчитай на candela_deka.';
     const list = (LH.prices[sex] || {})[DEVICES[device]] || [];
@@ -173,12 +176,12 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     let total = 0;
     let totalOld = 0;
     for (const key of zones) {
-      const row = list.find((r) => r[0] === key);
+      const row = list.find((r) => r[0] === key) || list.find((r) => r[0] === ZONE_ALIASES[key]);
       if (!row) { missing.push(LH.zones[key] ? LH.zones[key].ru : key); continue; }
-      const [, min, price, old] = row;
+      const [zone, min, price, old] = row;
       total += price;
       totalOld += old || price;
-      lines.push(`${LH.zones[key].ru}: ${money(price)} сум${old ? ` (без скидки ${money(old)})` : ''}, ~${min} мин`);
+      lines.push(`${LH.zones[zone].ru}: ${money(price)} сум${old ? ` (без скидки ${money(old)})` : ''}, ~${min} мин`);
     }
     return [
       `${sex === 'men' ? 'Мужчины, Candela' : 'Женщины, ' + DEVICE_NAME[device]}, за одну процедуру:`,
