@@ -1,6 +1,6 @@
 /* Laser House — ИИ-администратор для лички Telegram (Telegram Business) и Instagram Direct.
    Telegram: свободные ответы по данным сайта (assets/js/data.js), на точное время зовёт администратора.
-   Instagram: факты из скрипта (api/_script.md) как база знаний, разговор строит сам.
+   Instagram: без модели — приветствие, прайсы и вопрос из скрипта один раз на чат, дальше молчит.
    Цены в обоих каналах считает price_quote из данных сайта.
    Умеет: консультировать, считать стоимость, собирать заявку на запись и звать живого администратора.
 
@@ -70,6 +70,35 @@ Kurs: 7–10 muolaja, 3–4 hafta oraliqda.
 🎥 Video: instagram.com/reel/De4P3-eMO0b
 
 💎 Narxlar quyida. Muolajalarni sertifikatlangan mutaxassislar teringiz va tuklaringiz turiga individual sozlab o‘tkazadi.`;
+
+/* Instagram, раздел 1.2 скрипта: первый контакт для мужчин */
+const MEN_INTRO_RU = `Мы работаем на оригинальной Candela Gentle Pro-U (США) 🇺🇸 — это золотой стандарт лазерной эпиляции во всём мире, аппарат, который лучше всего подходит именно для плотных и жёстких мужских волос.
+
+Эффект:
+— волосы становятся тоньше уже после 1 процедуры
+— в среднем требуется 5–7 сеансов
+— процедура занимает 10–20 минут
+— мощная система охлаждения снижает чувствительность и делает процесс комфортным
+
+Самые популярные зоны у мужчин:
+— контур бороды
+— шея
+— глубокое бикини (интим зона)
+— подмышки`;
+
+const MEN_INTRO_UZ = `Biz asl Candela Gentle Pro-U (AQSh) 🇺🇸 dan foydalanamiz — butun dunyo bo‘ylab lazer epilyatsiyasi uchun oltin standart, qalin va dag‘al erkaklar tuklari uchun eng mos keladigan qurilma.
+
+Ta’siri:
+— bitta muolajadan keyin tuklar yupqalashadi
+— o‘rtacha 5–7 seans talab qilinadi
+— muolaja 10–20 daqiqa davom etadi
+— kuchli sovutish tizimi sezgirlikni pasaytiradi va jarayonni qulay qiladi
+
+Erkaklar uchun eng mashhur sohalar:
+— soqol konturi
+— bo‘yin
+— chuqur bikini sohasi (intim soha)
+— qo‘ltiq osti`;
 
 /* разбор ответа модели: «===» отделяет сообщения, [[photo:ключ]] — фото на этом месте */
 function toParts(answer, photoUrl) {
@@ -431,6 +460,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   /* живой администратор ответил в чате — агент замолкает на паузу из настроек */
   async function pause(channel, chatId) {
     await store.set(pauseKey(channel, chatId), Date.now(), (await pauseHours()) * 3600);
+    if (channel === 'ig') await store.once(igDoneKey(chatId), IG_DONE_TTL); // администратор уже ведёт чат — серия ему не нужна
   }
   const isPaused = async (channel, chatId) => !!(await store.get(pauseKey(channel, chatId)));
 
@@ -536,9 +566,35 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]`;
   }
 
+  /* Instagram работает строго по скрипту и без модели: приветствие, прайсы, вопрос — один раз на чат, дальше ИИ молчит */
+  const igDoneKey = (id) => `ai:done:ig:${id}`;
+  const IG_DONE_TTL = 10 * 365 * 24 * 3600;
+
+  function igFirstContact(text) {
+    const uz = !/[а-яё]/i.test(text) && /[a-z]/i.test(text);
+    if (/мужск|мужчин|парен|парн|бород|erkak|soqol/i.test(text)) {
+      return uz
+        ? `Assalomu alaykum!\n\n${MEN_INTRO_UZ}\n[[photo:men-candela-uz]]\n===\nQaysi sohalarni lazer epilyatsiya qildirmoqchisiz?`
+        : `${greeting()}\n\n${MEN_INTRO_RU}\n[[photo:men-candela-ru]]\n===\nКакие зоны Вас интересуют?`;
+    }
+    return uz
+      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\nSiz ilgari lazer epilyatsiyasi xizmatlaridan foydalanganmisiz?`
+      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\nВы ранее пользовались услугами лазерной эпиляции?`;
+  }
+
+  async function igReply(who, text) {
+    if (!(await store.once(igDoneKey(who.chatId), IG_DONE_TTL))) return null;
+    const history = (await store.get(histKey('ig', who.chatId))) || [];
+    if (history.length) return null; // чат уже шёл раньше — первый контакт посреди разговора не отправляем
+    const answer = igFirstContact(text);
+    await store.set(histKey('ig', who.chatId), [{ role: 'user', content: text }, { role: 'assistant', content: answer }], HISTORY_TTL);
+    return toParts(answer, photoUrl);
+  }
+
   /* who: { channel: 'tg'|'ig', chatId, label (HTML для админов) } → сообщения клиенту [{ text } | { photo }] или null */
   async function reply(who, text) {
     if (!text || !(await active(who.channel, who.chatId))) return null;
+    if (who.channel === 'ig') return igReply(who, text);
 
     const history = (await store.get(histKey(who.channel, who.chatId))) || [];
     const fixed = devicePriceAnswer(text, history);
