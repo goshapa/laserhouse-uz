@@ -26,6 +26,51 @@ const SCRIPT = SCRIPT_MD.slice(SCRIPT_MD.indexOf('## 1. '), SCRIPT_MD.indexOf('#
 const OPEN_QUESTIONS = SCRIPT_MD.slice(SCRIPT_MD.indexOf('## Нужно уточнить')).split('\n')
   .filter((l) => l.startsWith('- [ ] ')).map((l) => l.slice(6).replace(/\*\*/g, ''));
 
+/* точный текст студии на запрос прайса по аппарату */
+const DEVICE_PRICE_RU = `Благодарим за интерес к нашей студии.
+Мы работаем только на аппаратах премиум-класса, которые обеспечивают комфорт и видимый результат уже после первых процедур:
+
+🇺🇸 CANDELA Gentle Lase Pro-U (2026) — александритовый лазер, эталон эпиляции.
+Курс: 5–7 процедур с интервалом 5–7 недель.
+— Для светлой кожи и всех типов волос.
+— Охлаждение снижает болевые ощущения.
+
+🇮🇹 DEKA MOTUS PRO — александритовый и неодимовый лазеры, технология Moveo.
+Курс: 5–7 процедур с интервалом 5–7 недель.
+— Режим под разные типы кожи, в том числе смуглую.
+— Охлаждаемый сапфировый наконечник.
+
+🇩🇪 HAIR BOSS X-FEST — диодный лазер нового поколения.
+Курс: 7–10 процедур с интервалом 3–4 недели.
+— Для всех типов кожи, включая загорелую.
+— Работает быстро, современное охлаждение.
+
+🎥 Видео: instagram.com/reel/De4P3-eMO0b
+
+💎 Прайс ниже. Процедуры проводят сертифицированные специалисты с индивидуальной настройкой под ваш тип кожи и волос.`;
+
+const DEVICE_PRICE_UZ = `Studiyamizga qiziqish bildirganingiz uchun rahmat.
+Biz faqat premium-klass uskunalarda ishlaymiz, ular qulaylik va ko‘rinadigan natijani dastlabki muolajalardanoq ta’minlaydi:
+
+🇺🇸 CANDELA Gentle Lase Pro-U (2026) — aleksandrit lazer, epilyatsiya etaloni.
+Kurs: 5–7 muolaja, 5–7 hafta oraliqda.
+— Och teri va tukning barcha turlari uchun.
+— Sovutish tizimi og‘riqni kamaytiradi.
+
+🇮🇹 DEKA MOTUS PRO — aleksandrit va neodim lazerlar, Moveo texnologiyasi.
+Kurs: 5–7 muolaja, 5–7 hafta oraliqda.
+— Rejim turli teri turlariga, jumladan qoramtir teriga ham moslanadi.
+— Sovutiladigan safir nasadka.
+
+🇩🇪 HAIR BOSS X-FEST — yangi avlod diod lazeri.
+Kurs: 7–10 muolaja, 3–4 hafta oraliqda.
+— Barcha teri turlari, jumladan qoraygan teri uchun.
+— Tez ishlaydi, zamonaviy sovutish.
+
+🎥 Video: instagram.com/reel/De4P3-eMO0b
+
+💎 Narxlar quyida. Muolajalarni sertifikatlangan mutaxassislar teringiz va tuklaringiz turiga individual sozlab o‘tkazadi.`;
+
 /* разбор ответа модели: «===» отделяет сообщения, [[photo:ключ]] — фото на этом месте */
 function toParts(answer, photoUrl) {
   const parts = [];
@@ -476,13 +521,26 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return 'Неизвестный инструмент.';
   }
 
+  /* «Отправьте прайс на … HAIR BOSS / CANDELA/DEKA» — точный текст студии и оба женских прайса, без модели.
+     Прайс уже отправляли в этом чате — решает модель по правилу о повторном прайсе. */
+  function devicePriceAnswer(text, history) {
+    if (!/прайс|prays|narxlar/i.test(text) || !/hair\s*boss|диод|diod|candela|кандел|deka|дека|александрит|aleksandrit/i.test(text)) return null;
+    if (/мужск|мужчин|парн|erkak/i.test(text)) return null;
+    if (history.some((m) => String(m.content).includes('[[photo:women-'))) return null;
+    const uz = !/[а-яё]/i.test(text);
+    return uz
+      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]`
+      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]`;
+  }
+
   /* who: { channel: 'tg'|'ig', chatId, label (HTML для админов) } → сообщения клиенту [{ text } | { photo }] или null */
   async function reply(who, text) {
     if (!text || !(await active(who.channel, who.chatId))) return null;
 
     const history = (await store.get(histKey(who.channel, who.chatId))) || [];
+    const fixed = devicePriceAnswer(text, history);
     const prompts = promptsFrom((await savedCfg()).values);
-    const answer = await generate(who, history, text, prompts);
+    const answer = fixed || await generate(who, history, text, prompts);
     const parts = toParts(answer, photoUrl);
     if (!parts.length) return null;
     // в память кладём только текст диалога (с метками фото): короче и не тянет блоки инструментов между сессиями
