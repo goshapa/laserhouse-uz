@@ -472,7 +472,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   /* уведомление админам — не чаще одного раза на чат: модель не помнит прошлые вызовы и зовёт инструменты повторно */
   const sentKey = (kind, ch, id) => `ai:n:${kind}:${ch}:${id}`;
-  const NOTIFY_TTL = { booking: 24 * 3600, admin: 12 * 3600 };
+  const NOTIFY_TTL = { booking: 24 * 3600, admin: 12 * 3600, reply: 12 * 3600 };
   const wasSent = async (kind, who) => !!(await store.get(sentKey(kind, who.channel, who.chatId)));
 
   async function notifyOnce(kind, who, html) {
@@ -583,9 +583,15 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   async function igReply(who, text) {
-    if (!(await store.once(igDoneKey(who.chatId), IG_DONE_TTL))) return null;
+    const first = await store.once(igDoneKey(who.chatId), IG_DONE_TTL);
     const history = (await store.get(histKey('ig', who.chatId))) || [];
-    if (history.length) return null; // чат уже шёл раньше — первый контакт посреди разговора не отправляем
+    if (!first || history.length) { // чат уже шёл: серию не повторяем, клиенту теперь отвечают люди
+      if (history.length) {
+        await notifyOnce('reply', who, `💬 <b>Клиент ответил в Instagram</b>\n\nКлиент: ${who.label}\n\n${esc(String(text).slice(0, 500))}\n\n` +
+          'Ответьте клиенту в Директе: ИИ в этом чате больше не пишет.');
+      }
+      return null;
+    }
     const answer = igFirstContact(text);
     await store.set(histKey('ig', who.chatId), [{ role: 'user', content: text }, { role: 'assistant', content: answer }], HISTORY_TTL);
     return toParts(answer, photoUrl);
