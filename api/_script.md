@@ -225,22 +225,22 @@
 #### ① Коротко о процедуре
 
 **RU:**
-> Коротко о процедуре:
+> 😊 Поняла, тогда расскажу коротко о самой процедуре, чтобы вам было понятнее 🤍
 >
 > Лазерная эпиляция — это эффективный и безопасный способ удаления нежелательных волос. Лазер действует на волосяной фолликул через пигмент меланин, разрушая его и предотвращая дальнейший рост.
 >
 > Процедура проходит бережно — луч воздействует только на верхние слои кожи, не повреждая её.
 >
-> В отличие от бритья или воска, результат после лазера сохраняется надолго, а волосы со временем становятся тоньше и растут всё реже. Уже после первой процедуры виден эффект
+> В отличие от бритья или воска, результат после лазера сохраняется надолго, а волосы со временем становятся тоньше и растут всё реже. Уже после первой процедуры виден эффект 💫
 
 **UZ:**
-> Jarayon haqida qisqacha:
+> 😊 Tushundim, sizga qulay bo‘lishi uchun jarayon haqida qisqacha tushuntirib beraman 🤍
 >
 > Lazer epilyatsiyasi — keraksiz tuklarni olib tashlashning samarali va xavfsiz usuli. Lazer nuri melaninga ta’sir qilib, tuk ildizini zararlaydi va uning keyingi o‘sishini to‘xtatadi.
 >
 > Protsedura juda muloyim o‘tadi — lazer faqat terining yuqori qatlamlariga ta’sir qiladi, teriga shikast yetkazmaydi.
 >
-> Qirqish yoki mum epilyatsiyasiga nisbatan, lazer natijasi ancha uzoq davom etadi. Vaqt o‘tishi bilan tuklar ingichkaroq va siyraklashib boradi. Hatto birinchi seansdayoq sezilarli effekt ko‘rinadi
+> Qirqish yoki mum epilyatsiyasiga nisbatan, lazer natijasi ancha uzoq davom etadi. Vaqt o‘tishi bilan tuklar ingichkaroq va siyraklashib boradi. Hatto birinchi seansdayoq sezilarli effekt ko‘rinadi 💫
 
 #### ② Фототип кожи
 
@@ -271,11 +271,13 @@
 **Фототип 1–3** — подходят все три аппарата:
 
 **RU:**
+> 💛 Отлично!
 > Для Вас подойдут все три аппарата — Александрит Candela, Александрит DEKA и Диод Hair Boss.
 >
 > Подскажите, пожалуйста, какие зоны хотите сделать — посчитаю вам стоимость?
 
 **UZ:**
+> 💛 Super!
 > Sizga uchala apparat ham mos keladi — Aleksandrit Candela, Aleksandrit DEKA va Diod Hair Boss.
 >
 > Qaysi sohalarni qilishni xohlaysiz? Sizga narxini hisoblab beraman.
@@ -290,12 +292,16 @@
 Ответ на вопрос ④ из 1.1. Только для женщин: мужчинам этот вопрос не задаётся.
 
 **RU:**
+> 😊 Отлично, хорошо, что вы уже знакомы с лазерной эпиляцией 🤍
+>
 > Подскажите, пожалуйста, на каком аппарате вы делали процедуру?
 > И какой из наших аппаратов вам подошёл бы — Candela, DEKA или HairBoss?
 >
 > Мы рассчитаем вам цены и подберём удобное время для записи.
 
 **UZ:**
+> 😊 Juda yaxshi, lazer epilyatsiyasi bilan allaqachon tanish ekanligingiz yaxshi 🤍
+>
 > Iltimos, ilgari qaysi apparatda muolaja qilgansiz?
 > Bizning apparatlardan qaysi biri sizga mos kelishini xohlaysiz — Candela, DEKA yoki HairBoss?
 >
@@ -444,7 +450,7 @@
 >
 > Важно: во время процедуры мастер всегда уточняет ваши ощущения. Параметры подбираются индивидуально и могут корректироваться в процессе, чтобы процедура была комфортной и безопасной именно для вас.
 >
-> В целом ощущения зависят от зоны и индивидуальной чувствительности, но большинство клиентов отмечают, что процедура переносится легко
+> В целом ощущения зависят от зоны и индивидуальной чувствительности, но большинство клиентов отмечают, что процедура переносится легко 🤍
 
 **UZ:**
 > Laser House’da muolajalar iloji boricha qulay o‘tadi, chunki biz kuchli sovutish tizimiga ega zamonaviy uskunalardan foydalanamiz.
@@ -457,7 +463,7 @@
 >
 > Muhim: muolaja davomida mutaxassis doimo sezgilaringizni so‘rab turadi. Parametrlar individual tanlanadi va muolaja qulay va xavfsiz bo‘lishi uchun jarayon davomida sozlanishi mumkin.
 >
-> Umuman olganda, sezgilar sohaga va individual sezuvchanlikka bog‘liq, ammo ko‘pchilik mijozlar muolaja oson o‘tishini ta’kidlashadi
+> Umuman olganda, sezgilar sohaga va individual sezuvchanlikka bog‘liq, ammo ko‘pchilik mijozlar muolaja oson o‘tishini ta’kidlashadi 🤍
 
 **Важно для агента:** мужчинам про HairBoss и DEKA не писать — убрать абзацы о диодном лазере и DEKA, оставить только Candela.
 
@@ -570,12 +576,12 @@
 **Клиент может написать так:** «у меня много родинок», «есть родинки, можно?», «xollar bor», «xolim ko‘p, mumkinmi?»
 
 **RU:**
-> Во время процедуры мы не воздействуем лазером на родинки. Мастер аккуратно обходит их или закрывает специальным защитным средством, чтобы процедура проходила безопасно.
+> Если в зоне есть родинки, переживать не нужно: во время процедуры мы не воздействуем лазером на родинки. Мастер аккуратно обходит их или закрывает специальным защитным средством, чтобы процедура проходила безопасно.
 >
 > Перед началом процедуры специалист обязательно осмотрит кожу и родинки и при необходимости скорректирует работу в этой зоне.
 
 **UZ:**
-> Muolaja davomida xollarga lazer bilan ta’sir qilmaymiz. Mutaxassis ularni ehtiyotkorlik bilan aylanib o‘tadi yoki maxsus himoya vositasi bilan yopadi — muolaja xavfsiz o‘tishi uchun.
+> Agar bu sohada xollar bo‘lsa, xavotir olmang: muolaja davomida xollarga lazer bilan ta’sir qilmaymiz. Mutaxassis ularni ehtiyotkorlik bilan aylanib o‘tadi yoki maxsus himoya vositasi bilan yopadi — muolaja xavfsiz o‘tishi uchun.
 >
 > Muolajadan oldin mutaxassis teringiz va xollaringizni albatta ko‘rib chiqadi va kerak bo‘lsa, bu sohadagi ishni moslashtiradi.
 
@@ -595,7 +601,7 @@
 >
 > Gap lazer zararli ekanida emas, balki homiladorlik davri maksimal ehtiyotkorlikni talab qilishida va organizm gormonal o‘zgarishlarni boshdan kechirishida. To‘liq xavfsizlik uchun muolajalar homiladorlik tugaguncha qoldiriladi.
 
-**Важно для агента:** отвечать только по делу, не поздравлять. Записать на процедуру после окончания беременности не предлагать настойчиво: клиентка напишет сама, когда будет готова.
+**Важно для агента:** не поздравлять. Записать на процедуру после окончания беременности не предлагать настойчиво: клиентка напишет сама, когда будет готова.
 
 ### 6.4. Можно ли во время месячных?
 
@@ -606,14 +612,14 @@
 >
 > Можно проводить процедуру на всех зонах, кроме зоны бикини.
 >
-> Если в эти дни вы чувствуете себя некомфортно или процедура будет для вас неудобна, мы можем спокойно перенести запись на другой день.
+> Если в эти дни вы чувствуете себя некомфортно или процедура будет для вас неудобна, мы можем спокойно перенести запись на другой день. 🤍
 
 **UZ:**
 > Hayz paytida lazer epilyatsiyasini qilish mumkin, bu qarshi ko‘rsatma emas.
 >
 > Muolajani bikini sohasidan tashqari barcha sohalarda o‘tkazish mumkin.
 >
-> Agar bu kunlarda o‘zingizni noqulay his qilsangiz yoki muolaja siz uchun noqulay bo‘lsa, yozuvingizni bemalol boshqa kunga ko‘chirishimiz mumkin.
+> Agar bu kunlarda o‘zingizni noqulay his qilsangiz yoki muolaja siz uchun noqulay bo‘lsa, yozuvingizni bemalol boshqa kunga ko‘chirishimiz mumkin. 🤍
 
 **Важно для агента:** если клиентка записана на бикини и пишет, что у неё месячные, — предложить перенести запись и вызвать администратора, чтобы он её перенёс.
 
@@ -622,6 +628,8 @@
 **Клиент может спросить так:** «не вызывает ли рак?», «лазер не опасен?», «это не облучение?», «rak chaqirmaydimi?», «saraton bo‘lmaydimi?», «zararli emasmi?»
 
 **RU:**
+> Понимаем ваш вопрос — он очень частый и абсолютно нормальный.
+>
 > Лазерная эпиляция не вызывает рак.
 > Используемый в процедуре лазер не является ионизирующим излучением (в отличие от рентгена или радиации) и не повреждает ДНК клеток.
 >
@@ -631,9 +639,11 @@
 >
 > Именно поэтому мы работаем только на оригинальном профессиональном оборудовании, а параметры всегда подбирает мастер индивидуально.
 >
-> Если будут вопросы — мы всегда подробно объясняем всё до процедуры
+> Если будут вопросы — мы всегда подробно объясняем всё до процедуры 🤍
 
 **UZ:**
+> Savolingizni tushunamiz — bu juda ko‘p beriladigan va mutlaqo normal savol.
+>
 > Lazer epilyatsiyasi saraton kasalligiga olib kelmaydi.
 > Muolajada ishlatiladigan lazer ionlashtiruvchi nurlanish emas (rentgen yoki radiatsiyadan farqli o‘laroq) va hujayra DNKsiga zarar yetkazmaydi.
 >
@@ -643,7 +653,7 @@
 >
 > Shuning uchun biz faqat original professional uskunalarda ishlaymiz, parametrlarni esa har doim mutaxassis individual tanlaydi.
 >
-> Savollaringiz bo‘lsa — muolajadan oldin hammasini batafsil tushuntirib beramiz
+> Savollaringiz bo‘lsa — muolajadan oldin hammasini batafsil tushuntirib beramiz 🤍
 
 ### 6.6. Можно ли после кесарева сечения?
 
@@ -699,7 +709,7 @@
 > По какому адресу желаете записаться?
 > На какой аппарат желаете записаться?
 > На какой день Вам будет удобно?
-> И на какие зоны желаете провести процедуру?
+> И на какие зоны желаете провести процедуру? 🤍
 
 **UZ:**
 > Yozilish uchun, iltimos, quyidagilarni aniqlashtiring:
@@ -707,7 +717,7 @@
 > Qaysi filialga yozilmoqchisiz?
 > Qaysi apparatga yozilmoqchisiz?
 > Qaysi kun sizga qulay?
-> Qaysi sohalarga muolaja qilmoqchisiz?
+> Qaysi sohalarga muolaja qilmoqchisiz? 🤍
 
 **Важно для агента:**
 - Не спрашивать то, что клиент уже сказал раньше в переписке (филиал, аппарат, зоны). Спрашивать только то, чего не хватает.
@@ -749,7 +759,7 @@
 **RU:**
 > Сейчас у нас действует дополнительная скидка –10% при записи от 3-х зон.
 >
-> Также у нас есть карта постоянного клиента
+> Также у нас есть карта постоянного клиента 💫
 > — она даёт накопительные скидки 5%, 10% и до 15%
 > — карту мы дарим после первых процедур
 > — с каждым визитом условия становятся выгоднее
@@ -757,7 +767,7 @@
 **UZ:**
 > Hozirda 3 va undan ortiq sohaga yozilganda qo‘shimcha –10% chegirma amal qiladi.
 >
-> Shuningdek, bizda doimiy mijoz kartasi bor
+> Shuningdek, bizda doimiy mijoz kartasi bor 💫
 > — u 5%, 10% va 15% gacha jamg‘arma chegirmalarni beradi
 > — kartani birinchi muolajalardan keyin sovg‘a qilamiz
 > — har bir tashrif bilan shartlar yanada qulayroq bo‘ladi
