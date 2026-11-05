@@ -12,7 +12,7 @@
   const TOOL_NAME = { price_quote: 'Посчитал цену', submit_booking: 'Заявка на запись (не отправлена)', call_admin: 'Позвал администратора (не отправлено)' };
 
   const BLOCKS = [
-    { key: 'character', title: 'Характер', where: 'Telegram и Instagram', lead: 'Как ИИ разговаривает с клиентами: тон, обращение, чего избегать.' },
+    { key: 'character', title: 'Характер', where: 'Только Telegram', lead: 'Как ИИ разговаривает с клиентами: тон, обращение, чего избегать.' },
     { key: 'pricing', title: 'Цены', where: 'Telegram и Instagram', lead: 'Как называть цены. Сами суммы считаются из прайса на сайте: инструмент price_quote не стоит убирать, иначе ИИ начнёт называть цены по памяти.' },
     { key: 'scope', title: 'Границы', where: 'Telegram и Instagram', lead: 'По каким студиям ИИ консультирует и что отвечает про остальные города.' },
     { key: 'tg', title: 'Инструкция для Telegram', where: 'Только Telegram', lead: 'Как вести диалог и запись в личке Telegram. Факты здесь берутся из данных сайта.' },
@@ -217,6 +217,10 @@
         <div class="p-fact"><dt>Изменено блоков</dt><dd>${S.overridden.length}<small>из ${Object.keys(S.defaults).length}, остальные исходные</small></dd></div>
       </dl>
       <div class="p-pause">
+        <b><strong>Ответы модели в Instagram</strong>${S.settings.igModel ? 'Включены: ИИ отвечает строго по скрипту, а чего там нет, передаёт администратору.' : 'Выключены: клиент получает одну серию сообщений, дальше отвечают люди.'}</b>
+        <button class="btn btn--ghost btn--sm" data-ig-model>${S.settings.igModel ? 'Выключить' : 'Включить'}</button>
+      </div>
+      <div class="p-pause">
         <b><strong>Пауза после живого ответа</strong>Если администратор сам ответил клиенту или ИИ позвал администратора, ИИ молчит в этом чате столько часов.</b>
         <input class="p-input" type="number" min="1" max="168" value="${S.settings.pauseHours}" aria-label="Пауза в часах" data-pause>
         <span class="muted">часов</span>
@@ -228,6 +232,10 @@
         if (r) { S.settings = r.settings; render(); }
       };
     });
+    $('[data-ig-model]', v).onclick = async () => {
+      const r = await act(() => api('settings', { patch: { igModel: !S.settings.igModel } }), S.settings.igModel ? 'Ответы модели в Instagram выключены' : 'Ответы модели в Instagram включены');
+      if (r) { S.settings = r.settings; render(); }
+    };
     $('[data-pause]', v).onchange = async (e) => {
       const r = await act(() => api('settings', { patch: { pauseHours: Number(e.target.value) } }), 'Пауза изменена');
       if (r) S.settings = r.settings; else e.target.value = S.settings.pauseHours;

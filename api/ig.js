@@ -61,6 +61,8 @@ async function clientLabel(igsid) {
   return p.username ? `${name} (<a href="https://instagram.com/${esc(p.username)}">@${esc(p.username)}</a>)` : name;
 }
 
+const MERGE_WAIT_MS = 6000;
+
 async function handleEvent(ev) {
   const m = ev.message;
   if (!m || m.is_deleted) return;
@@ -78,8 +80,18 @@ async function handleEvent(ev) {
     return agent.pause('ig', chat);
   }
 
-  const text = (m.text || '').trim();
-  if (!text || !(await agent.active('ig', ev.sender.id))) return;
+  const incoming = (m.text || '').trim();
+  if (!incoming || !(await agent.active('ig', ev.sender.id))) return;
+
+  // клиенты часто пишут несколько сообщений подряд: ждём паузу и отвечаем один раз на всё сразу
+  const bufKey = `ig:buf:${ev.sender.id}`;
+  const lastKey = `ig:last:${ev.sender.id}`;
+  await store.push(bufKey, incoming, 300);
+  await store.set(lastKey, m.mid, 300);
+  await new Promise((r) => setTimeout(r, MERGE_WAIT_MS));
+  if ((await store.get(lastKey)) !== m.mid) return; // пришло ещё сообщение: ответит его обработчик
+  const text = (await store.take(bufKey)).join('\n');
+  if (!text) return;
 
   const who = { channel: 'ig', chatId: ev.sender.id, label: await clientLabel(ev.sender.id) };
   const parts = await agent.reply(who, text);
@@ -123,7 +135,7 @@ module.exports = async (req, res) => {
           message: ev.message && { text: !!ev.message.text, echo: !!ev.message.is_echo, attachments: !!ev.message.attachments }
         }))
       }));
-      for (const ev of entry.messaging || []) await handleEvent(ev);
+      await Promise.all((entry.messaging || []).map(handleEvent)); // параллельно: иначе склейка сообщений из одного вебхука не сработает
     }
   } catch (e) {
     console.error('[ig] update failed', e);

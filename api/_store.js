@@ -58,4 +58,17 @@ async function once(key, ttlSec) {
   return (await redis(['SET', key, '1', 'NX', 'EX', ttlSec])) === 'OK';
 }
 
-module.exports = { get, set, del, once, persistent: () => !!redisConf() };
+/* очередь: push добавляет в конец, take забирает всё и очищает */
+async function push(key, value, ttlSec) {
+  if (!redisConf()) { const list = memGet(key) || []; list.push(value); mem.set(key, { v: list, exp: Date.now() + ttlSec * 1000 }); return; }
+  await redis(['RPUSH', key, JSON.stringify(value)]);
+  await redis(['EXPIRE', key, ttlSec]);
+}
+
+async function take(key) {
+  if (!redisConf()) { const list = memGet(key) || []; mem.delete(key); return list; }
+  const list = (await redis(['LPOP', key, 1000])) || [];
+  return list.map((v) => JSON.parse(v));
+}
+
+module.exports = { get, set, del, once, push, take, persistent: () => !!redisConf() };

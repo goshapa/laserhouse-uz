@@ -1,6 +1,6 @@
 /* Laser House — ИИ-администратор для лички Telegram (Telegram Business) и Instagram Direct.
    Telegram: свободные ответы по данным сайта (assets/js/data.js), на точное время зовёт администратора.
-   Instagram: без модели — приветствие, прайсы и вопрос из скрипта один раз на чат, дальше молчит.
+   Instagram: строго по скрипту (api/_script.md). Модель включается в панели (ai:settings.igModel); выключена — только серия из кода один раз на чат.
    Цены в обоих каналах считает price_quote из данных сайта.
    Умеет: консультировать, считать стоимость, собирать заявку на запись и звать живого администратора.
 
@@ -267,24 +267,44 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
 Не обсуждай темы, не связанные со студией, — мягко возвращай разговор к процедурам.`,
 
-    /* Instagram: факты из скрипта, слова свои */
-    ig: `Ты — администратор студии лазерной эпиляции Laser House в Ташкенте и отвечаешь клиентам в личных сообщениях Instagram. Твоя задача — заинтересовать человека и довести его до записи.
+    /* Instagram: строго по скрипту, без своих слов и без характера из блока character */
+    ig: `Ты — администратор студии лазерной эпиляции Laser House в Ташкенте и отвечаешь клиентам в личных сообщениях Instagram. Ты работаешь строго по скрипту ниже. Передать вопрос администратору всегда лучше, чем ошибиться.
 
-Материал ниже — твоя база знаний, а не сценарий:
-- Не работай по нему как по шаблону: не пересылай его блоки и не повторяй порядок шагов и обязательные серии сообщений. Строй разговор сама, исходя из того, что пишет человек.
-- Все факты, цифры, сроки, названия и ограничения бери из этого материала. Фактов, советов, сравнений и обещаний, которых в нём нет, не добавляй и общими знаниями о лазерной эпиляции не пользуйся.
-- Пометки «Важно для агента» содержат правила и ограничения: соблюдай те, что касаются фактов, здоровья, скидок, мужчин и записи, клиенту их не показывай. Требования отправить текст или список целиком на тебя не действуют, кроме противопоказаний. Скидки упоминай, только когда спросили.
-- Если нужного факта в материале нет, ответа не присылали (например, фототип 4 или 5–6) или раздел пуст — не придумывай ответ: вызови call_admin и скажи клиенту, что администратор скоро ответит здесь же.
-- На темы, не связанные со студией, ответь, что можешь помочь только по процедурам в студии, и верни разговор к ним.
+Откуда брать ответ:
+- Есть подходящий раздел скрипта — отправь его эталонный текст дословно, на языке клиента. Убирать можно только то, что велит убрать пометка «Важно для агента». Не пересказывай и не дополняй своими словами. Пометки «Важно для агента» клиенту не показывай.
+- Не добавляй факты, советы, сравнения и обещания, которых нет в скрипте. Общими знаниями о лазерной эпиляции не пользуйся.
+- В скрипте нет ответа, раздел пуст, там написано «ответ ещё не прислан» или ты сомневаешься — не угадывай: вызови call_admin и напиши клиенту только эту фразу. RU: «Ваш вопрос передан администратору, он скоро ответит здесь же.» UZ: «Savolingiz administratorga yetkazildi, u tez orada shu yerda javob beradi.»
 
-Как оформлять ответ:
+Сразу вызывай call_admin и пиши только эту фразу, если клиент:
+- описывает состояние своей кожи или зоны: пигментация, тёмная кожа в зоне, пятна, раздражение, ожог;
+- подробно рассказывает свою историю процедур и просит подобрать аппарат или курс;
+- жалуется на результат или осложнение после процедур, в том числе в другой студии;
+- просит человека, недоволен, спрашивает про оплату, возврат или сертификат, хочет перенести запись.
+
+Тон:
+- Вежливо, спокойно и по делу, всегда на «Вы» (по-узбекски на «siz»).
+- Никаких шуток, иронии, игры слов и комплиментов. Никакой интриги, подогрева интереса, рекламных обещаний, срочности и дефицита.
+- Эмодзи только те, что есть в тексте скрипта. Свои не добавляй.
+
+Вопросы:
+- Перед ответом прочитай всю переписку. Не спрашивай то, что клиент уже сообщил, и не отправляй повторно уже отправленные тексты и прайсы.
+- Спрашивай только то, что предусмотрено скриптом или нужно для расчёта и записи, не больше одного вопроса за сообщение.
+- Если вызвала call_admin, больше ни о чём в этом ответе не спрашивай.
+
+Первое сообщение клиента в чате:
+- Общее сообщение без конкретики (приветствие, «цена», «прайс», «хочу на эпиляцию», «+»): ответь только меткой [[series]], а если пишет мужчина — только меткой [[series:men]]. Серию подставит система, разделы 1.1 и 1.2 сама не пересылай.
+- Конкретный вопрос: приветствие из раздела «Состояние этого чата» и ответ из нужного раздела, без серии.
+- В остальных сообщениях эти метки не используй.
+
+Оформление:
 - Узбекскому клиенту пиши на узбекском (латиница), остальным на русском.
-- В приветствии учитывай время суток из раздела «Состояние этого чата».
-- Если клиент просит прайс или все цены — отправь фото прайса (метки есть в разделе 1), весь прайс текстом не перечисляй. Другие фото отправляй, только когда они к месту.
+- Если клиент просит прайс или все цены — отправь фото прайса (метки есть в разделе 1), весь прайс текстом не перечисляй. Другие фото отправляй, только когда это указано в скрипте.
 
-Запись: узнавай нужное из разделов 7.1 и 7.2 постепенно, по ходу разговора, а не анкетой. Заявку отправляй через submit_booking, когда есть имя и телефон, а если клиент просит ему позвонить — сразу с тем, что известно.
+Запись: узнавай нужное по разделам 7.1 и 7.2, по одному вопросу. Заявку отправляй через submit_booking, когда есть имя и телефон, а если клиент просит ему позвонить — сразу с тем, что известно.
 
-Живого администратора зови через call_admin ещё и когда клиент просит человека, недоволен или жалуется, спрашивает про оплату, возврат или сертификат, и когда нужно перенести запись.`,
+Другое:
+- На темы, не связанные со студией, ответь, что можешь помочь только по процедурам в студии.
+- Если человек всерьёз спросит, бот ты или живой, скажи, что ты ИИ-помощник студии, и предложи позвать администратора.`,
 
     script: SCRIPT
   };
@@ -297,7 +317,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const common = (p) => `${p.character}\n\n${p.pricing}\n\n${p.scope}\n${FIXED}`;
   const zonesBlock = `# Ключи зон для price_quote (ключ — RU / UZ)\n${ZONES}`;
   const systemTg = (p = DEFAULTS) => `${p.tg}\n\n${common(p)}\n\n${knowledge()}\n\n${zonesBlock}`;
-  const systemIg = (p = DEFAULTS) => `${p.ig}\n\n${common(p)}\n\n# Скрипт\n${p.script}\n\n${zonesBlock}`;
+  const systemIg = (p = DEFAULTS) => `${p.ig}\n\n${p.pricing}\n\n${p.scope}\n${FIXED}\n\n# Скрипт\n${p.script}\n\n${zonesBlock}`;
 
   /* фото из скрипта лежат на сайте: метка [[photo:ключ]] → assets/img/prices/ключ.jpg */
   const PHOTOS = ['women-candela-deka-ru', 'women-candela-deka-uz', 'women-hairboss-ru', 'women-hairboss-uz', 'men-candela-ru', 'men-candela-uz', 'phototypes'];
@@ -366,12 +386,13 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   /* ---------- настройки из панели /ai: переключатели каналов и пауза (отдельный короткий ключ) ---------- */
   const SETTINGS = 'ai:settings';
-  const settingsDefaults = () => ({ tgEnabled: true, igEnabled: true, pauseHours: Number(process.env.AI_PAUSE_HOURS) || 12 });
+  const settingsDefaults = () => ({ tgEnabled: true, igEnabled: true, igModel: false, pauseHours: Number(process.env.AI_PAUSE_HOURS) || 12 });
   const getSettings = async () => ({ ...settingsDefaults(), ...((await store.get(SETTINGS)) || {}) });
   async function setSettings(patch) {
     const next = await getSettings();
     if (patch.tgEnabled !== undefined) next.tgEnabled = !!patch.tgEnabled;
     if (patch.igEnabled !== undefined) next.igEnabled = !!patch.igEnabled;
+    if (patch.igModel !== undefined) next.igModel = !!patch.igModel;
     if (patch.pauseHours !== undefined) {
       const h = Number(patch.pauseHours);
       if (!Number.isInteger(h) || h < 1 || h > 168) throw panelError('Пауза — целое число часов от 1 до 168.');
@@ -566,13 +587,13 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]`;
   }
 
-  /* Instagram работает строго по скрипту и без модели: приветствие, прайсы, вопрос — один раз на чат, дальше ИИ молчит */
+  /* Instagram: серия первого контакта всегда из кода. Модель решает только, нужна ли она, меткой [[series]] */
   const igDoneKey = (id) => `ai:done:ig:${id}`;
   const IG_DONE_TTL = 10 * 365 * 24 * 3600;
 
-  function igFirstContact(text) {
+  function igFirstContact(text, men) {
     const uz = !/[а-яё]/i.test(text) && /[a-z]/i.test(text);
-    if (/мужск|мужчин|парен|парн|бород|erkak|soqol/i.test(text)) {
+    if (men || /мужск|мужчин|парен|парн|бород|erkak|soqol/i.test(text)) {
       return uz
         ? `Assalomu alaykum!\n\n${MEN_INTRO_UZ}\n[[photo:men-candela-uz]]\n===\nQaysi sohalarni lazer epilyatsiya qildirmoqchisiz?`
         : `${greeting()}\n\n${MEN_INTRO_RU}\n[[photo:men-candela-ru]]\n===\nКакие зоны Вас интересуют?`;
@@ -582,19 +603,47 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\nВы ранее пользовались услугами лазерной эпиляции?`;
   }
 
+  /* метка серии от модели → текст серии; серия возможна только первым сообщением, иначе ответа нет и зовём администратора */
+  function igExpand(answer, text, isFirst) {
+    const m = String(answer).match(/\[\[series(:men)?\]\]/);
+    if (!m) return answer;
+    return isFirst ? igFirstContact(text, !!m[1]) : '';
+  }
+
   async function igReply(who, text) {
     const first = await store.once(igDoneKey(who.chatId), IG_DONE_TTL);
     const history = (await store.get(histKey('ig', who.chatId))) || [];
-    if (!first || history.length) { // чат уже шёл: серию не повторяем, клиенту теперь отвечают люди
-      if (history.length) {
-        await notifyOnce('reply', who, `💬 <b>Клиент ответил в Instagram</b>\n\nКлиент: ${who.label}\n\n${esc(String(text).slice(0, 500))}\n\n` +
-          'Ответьте клиенту в Директе: ИИ в этом чате больше не пишет.');
+
+    if (!(await getSettings()).igModel) { // модель выключена в панели: только серия, дальше отвечают люди
+      if (!first || history.length) {
+        if (history.length) {
+          await notifyOnce('reply', who, `💬 <b>Клиент ответил в Instagram</b>\n\nКлиент: ${who.label}\n\n${esc(String(text).slice(0, 500))}\n\n` +
+            'Ответьте клиенту в Директе: ИИ в этом чате больше не пишет.');
+        }
+        return null;
       }
+      const series = igFirstContact(text);
+      await store.set(histKey('ig', who.chatId), [{ role: 'user', content: text }, { role: 'assistant', content: series }], HISTORY_TTL);
+      return toParts(series, photoUrl);
+    }
+
+    if (!first && !history.length) return null; // чат вёл администратор, истории у ИИ нет: не вступаем посреди разговора
+    let answer;
+    try {
+      answer = igExpand(await generate(who, history, text, promptsFrom((await savedCfg()).values)), text, !history.length);
+    } catch (e) {
+      if (first) await store.del(igDoneKey(who.chatId)); // следующее сообщение клиента считается первым
+      throw e;
+    }
+    const parts = toParts(answer, photoUrl);
+    if (!parts.length) { // модель не дала ответа: клиент не должен остаться без человека
+      await notifyOnce('admin', who, `🙋 <b>Клиент ждёт администратора</b>\n\nОткуда: Instagram · ${who.label}\nИИ не смог ответить на сообщение:\n\n${esc(String(text).slice(0, 500))}`);
+      await pause('ig', who.chatId);
       return null;
     }
-    const answer = igFirstContact(text);
-    await store.set(histKey('ig', who.chatId), [{ role: 'user', content: text }, { role: 'assistant', content: answer }], HISTORY_TTL);
-    return toParts(answer, photoUrl);
+    const next = [...history, { role: 'user', content: text }, { role: 'assistant', content: answer }].slice(-HISTORY_LIMIT);
+    await store.set(histKey('ig', who.chatId), next, HISTORY_TTL);
+    return parts;
   }
 
   /* who: { channel: 'tg'|'ig', chatId, label (HTML для админов) } → сообщения клиенту [{ text } | { photo }] или null */
@@ -626,7 +675,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   async function sandbox({ channel, history, text, draft }) {
     const prompts = promptsFrom({ ...(await savedCfg()).values, ...cleanValues(draft) });
     const who = { channel, chatId: 'panel-test', label: 'проверка в панели', test: true, calls: [] };
-    const answer = await generate(who, history, text, prompts);
+    const raw = await generate(who, history, text, prompts);
+    const answer = channel === 'ig' ? igExpand(raw, text, !history.length) : raw;
     return { answer, parts: toParts(answer, photoUrl), calls: who.calls };
   }
 
@@ -642,7 +692,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     const notes = [];
     if (isIg) {
       notes.push(`Приветствие сейчас: RU — ${greeting()} UZ — Assalomu alaykum!`);
-      if (!history.length) notes.push('Это первое сообщение клиента: поздоровайся и начни живой разговор. Ответь на его вопрос, если он есть, и зацепи интерес.');
+      notes.push(history.length ? 'Это не первое сообщение клиента: не здоровайся заново, метки серии не используй.' : 'Это первое сообщение клиента в этом чате.');
     }
     if (!who.test && await wasSent('booking', who)) notes.push('Заявка этого клиента уже отправлена администраторам — submit_booking больше не вызывай, изменения администратор увидит в чате.');
     if (!who.test && await wasSent('admin', who)) notes.push('Администратор уже позван в этот чат — call_admin больше не вызывай, скажи, что он скоро ответит.');
@@ -695,6 +745,6 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   return {
     reply, pause, isPaused, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
-    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
+    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
 };
