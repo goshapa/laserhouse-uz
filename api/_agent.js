@@ -631,6 +631,13 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return history.some((m) => PRICE_TAG.test(String(m.content))) ? Infinity : null;
   }
 
+  /* клиент сообщил, что фото не открылось: только в этом случае прайс уходит повторно раньше чем через час */
+  const photoFailed = (text) => /не\s*(открыва|открыл|открот|загруж|загрузил|вижу|видно|пришл|пришел|пришёл|дош[её]л|дошл|показыва)|ochilmay|ochilmadi|ochilmayapti|ko[‘'’`]?rinmay|ko[‘'’`]?rinmadi|yuklanmay|yuklanmadi|kelmadi/i.test(String(text));
+  const priceAgoFor = (who, history, text) => {
+    const ago = priceAgo(who, history);
+    return ago != null && photoFailed(text) ? Infinity : ago;
+  };
+
   /* в чате последним был мужской прайс: клиент — мужчина, женский ему не отправляем, если сам прямо не попросил */
   function menChat(history, text) {
     if (/женск|девушк|ayol|qiz/i.test(text)) return false;
@@ -684,7 +691,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     try {
       who.priceAt = await store.get(priceKey(who.chatId));
       const raw = await generate(who, history, text, promptsFrom((await savedCfg()).values));
-      answer = igPriceGuard(igExpand(raw, text, !history.length), priceAgo(who, history), menChat(history, text));
+      answer = igPriceGuard(igExpand(raw, text, !history.length), priceAgoFor(who, history, text), menChat(history, text));
     } catch (e) {
       if (first) await store.del(igDoneKey(who.chatId)); // следующее сообщение клиента считается первым
       throw e;
@@ -732,7 +739,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     const who = { channel, chatId: 'panel-test', label: 'проверка в панели', test: true, calls: [] };
     if (Number(priceAgoMin) > 0) who.priceAt = Date.now() - Number(priceAgoMin) * 60000;
     const raw = await generate(who, history, text, prompts);
-    const answer = channel === 'ig' ? igPriceGuard(igExpand(raw, text, !history.length), priceAgo(who, history), menChat(history, text)) : raw;
+    const answer = channel === 'ig' ? igPriceGuard(igExpand(raw, text, !history.length), priceAgoFor(who, history, text), menChat(history, text)) : raw;
     return { answer, parts: toParts(answer, photoUrl), calls: who.calls };
   }
 
@@ -750,7 +757,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       notes.push(`Приветствие сейчас: RU — ${greeting()} UZ — Assalomu alaykum!`);
       notes.push(history.length ? 'Это не первое сообщение клиента: не здоровайся заново, метки серии не используй.' : 'Это первое сообщение клиента в этом чате.');
       const ago = priceAgo(who, history);
-      if (ago != null && ago < PRICE_HOUR) notes.push(`Прайс отправлен в этом чате меньше часа назад. Если клиент снова просит прайс, фото не отправляй и напиши только: RU «${PRICE_ABOVE.ru}» UZ «${PRICE_ABOVE.uz}»`);
+      if (ago != null && photoFailed(text)) notes.push('Клиент пишет, что не видит фото или оно не открылось. Если речь о прайсе, отправь весь прайс заново только метками фото: девушке оба женских фото, мужчине мужское. Администратора не зови и ничего не спрашивай.');
+      else if (ago != null && ago < PRICE_HOUR) notes.push(`Прайс отправлен в этом чате меньше часа назад. Если клиент снова просит прайс, фото не отправляй и напиши только: RU «${PRICE_ABOVE.ru}» UZ «${PRICE_ABOVE.uz}»`);
       else if (ago != null) notes.push('Прайс отправлялся в этом чате больше часа назад. Если клиент снова просит прайс, в том числе на один аппарат, отправь весь прайс заново: девушке оба женских фото, мужчине мужское фото. Если раньше в этом чате отправлялся мужской прайс, это мужчина.');
     }
     if (!who.test && await wasSent('booking', who)) notes.push('Заявка этого клиента уже отправлена администраторам — submit_booking больше не вызывай, изменения администратор увидит в чате.');
@@ -804,6 +812,6 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   return {
     reply, pause, isPaused, pausedIg, resumeIg, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
-    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
+    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
 };
