@@ -284,7 +284,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 Тон:
 - Вежливо, спокойно и по делу, всегда на «Вы» (по-узбекски на «siz»).
 - Никаких шуток, иронии, игры слов и комплиментов. Никакой интриги, подогрева интереса, рекламных обещаний, срочности и дефицита.
-- Эмодзи только те, что есть в тексте скрипта. Свои не добавляй.
+- Без эмоций, только по делу: не поздравляй, не сочувствуй, не радуйся, не благодари, не извиняйся и не оценивай слова клиента.
+- Эмодзи не добавляй. Оставляй только значки из текста скрипта: флаги стран и значки адресов.
 
 Вопросы:
 - Перед ответом прочитай всю переписку. Не спрашивай то, что клиент уже сообщил, и не отправляй повторно уже отправленные тексты. Повторный запрос прайса решай по разделу «Состояние этого чата».
@@ -697,9 +698,14 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return questions.length ? `${all.trim()}\n===\n${questions.join('\n')}` : answer;
   }
 
+  /* без эмоций: поздравления и эмоциональные значки не доходят до клиента, даже если модель их написала */
+  const EMOTION_LINE = /^.*(поздрав|tabrik).*$\n?/gim;
+  const EMOTION_ICONS = /[ \t]*(?:[😊🙂😉😍🥰🤗☺🤍💛💫💖💗💕💜🩷✨🌸🌟🎉🙏👍]|❤️?)/gu;
+  const igCalm = (answer) => String(answer).replace(EMOTION_LINE, '').replace(EMOTION_ICONS, '').replace(/^\n+/, '').trim();
+
   /* все проверки ответа модели в Instagram, одинаково в чате и в проверке из панели */
   const igFinal = (raw, who, history, text) => igPriceQuestions(
-    igPriceGuard(igExpand(raw, text, !history.length), priceAgoFor(who, history, text), menChat(history, text)), history, text);
+    igPriceGuard(igCalm(igExpand(raw, text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text);
 
   async function igReply(who, text) {
     const first = await store.once(igDoneKey(who.chatId), IG_DONE_TTL);
@@ -844,6 +850,6 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   return {
     reply, pause, isPaused, pausedIg, resumeIg, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
-    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
+    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
 };
