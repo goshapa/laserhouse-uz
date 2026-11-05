@@ -63,6 +63,47 @@ async function clientLabel(igsid) {
 
 const MERGE_WAIT_MS = 6000;
 
+/* Ссылка на рилс текстом приходит клиенту как «Сообщение недоступно», поэтому рилс уходит как публикация аккаунта.
+   Для этого нужен её ID: ищем по коду из ссылки и запоминаем */
+const REEL_LINK = /\S*instagram\.com\/reel\/([\w-]+)\S*/;
+const mediaPath = () => (unified() ? `${process.env.IG_ACCOUNT_ID}/media` : 'me/media');
+
+async function reelMediaId(code) {
+  const key = `ig:media:${code}`;
+  const cached = await store.get(key);
+  if (cached) return cached;
+  let after = '';
+  for (let page = 0; page < 10; page++) {
+    const json = await ig(`${mediaPath()}?fields=id,shortcode&limit=50${after ? `&after=${after}` : ''}`);
+    const hit = (json.data || []).find((m) => m.shortcode === code);
+    if (hit) {
+      await store.set(key, hit.id, 30 * 24 * 3600);
+      return hit.id;
+    }
+    after = json.paging && json.paging.next && json.paging.cursors && json.paging.cursors.after;
+    if (!after) break;
+  }
+  console.error(`[ig] рилс ${code} не найден среди публикаций`);
+  return null;
+}
+
+/* части ответа → сообщения Instagram. Рилс не нашли — строку с видео не отправляем вовсе */
+async function toMessages(parts) {
+  const messages = [];
+  for (const p of parts) {
+    if (p.photo) {
+      messages.push({ attachment: { type: 'image', payload: { url: p.photo } } });
+      continue;
+    }
+    const reel = p.text.match(REEL_LINK);
+    const media = reel && await reelMediaId(reel[1]);
+    const rest = reel ? p.text.replace(REEL_LINK, '').trim() : p.text;
+    if (rest && (!reel || media)) agent.splitText(rest, 1000).forEach((t) => messages.push({ text: t }));
+    if (media) messages.push({ attachment: { type: 'MEDIA_SHARE', payload: { id: media } } });
+  }
+  return messages;
+}
+
 async function handleEvent(ev) {
   const m = ev.message;
   if (!m || m.is_deleted) return;
@@ -105,9 +146,7 @@ async function handleEvent(ev) {
   if (parts == null) return;
   await store.set(`ig:sending:${ev.sender.id}`, 1, 60);
   // лимит Instagram — 1000 байт на сообщение, по-русски это около 500 букв
-  const messages = parts.flatMap((p) => (p.photo
-    ? [{ attachment: { type: 'image', payload: { url: p.photo } } }]
-    : agent.splitText(p.text, 1000).map((t) => ({ text: t }))));
+  const messages = await toMessages(parts);
   for (const message of messages) {
     const sent = await ig(messagesPath(), { recipient: { id: ev.sender.id }, message });
     if (sent.message_id) await store.set(`ig:own:${sent.message_id}`, 1, 24 * 3600);
