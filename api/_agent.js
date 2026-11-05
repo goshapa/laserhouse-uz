@@ -707,12 +707,9 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const igCalm = (answer) => String(answer).replace(EMOTION_LINE, '')
     .replace(EMOJI, (all, icon) => (SCRIPT_EMOJI.has(icon) ? all : '')).replace(/^\n+/, '').trim();
 
-  /* Instagram показывает сообщение со ссылкой на рилс как сам рилс, и текст рядом со ссылкой пропадает: ссылка идёт отдельным сообщением */
-  const igLinkAlone = (answer) => String(answer).replace(/^.*instagram\.com\/.*$/gm, '===\n$&\n===');
-
   /* все проверки ответа модели в Instagram, одинаково в чате и в проверке из панели */
-  const igFinal = (raw, who, history, text) => igLinkAlone(igPriceQuestions(
-    igPriceGuard(igCalm(igExpand(raw, text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text));
+  const igFinal = (raw, who, history, text) => igPriceQuestions(
+    igPriceGuard(igCalm(igExpand(raw, text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text);
 
   /* все чаты Instagram, про которые ИИ что-то помнит */
   async function igChatIds() {
@@ -742,7 +739,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
         }
         return null;
       }
-      const series = igLinkAlone(igFirstContact(text));
+      const series = igFirstContact(text);
       await store.set(histKey('ig', who.chatId), [{ role: 'user', content: text }, { role: 'assistant', content: series }], HISTORY_TTL);
       return toParts(series, photoUrl);
     }
@@ -873,6 +870,6 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   return {
     reply, pause, isPaused, pausedIg, resumeIg, igOnly, igChatIds, igForget, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
-    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _igLinkAlone: igLinkAlone, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
+    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
 };
