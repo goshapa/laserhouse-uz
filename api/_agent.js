@@ -635,7 +635,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   function menChat(history, text) {
     if (/женск|девушк|ayol|qiz/i.test(text)) return false;
     const tags = history.map((m) => String(m.content).match(PRICE_TAGS) || []).flat();
-    return !!tags.length && tags[tags.length - 1].includes('men-candela');
+    return !!tags.length && tags[tags.length - 1].startsWith('[[photo:men-');
   }
 
   function igPriceGuard(answer, ago, men) {
