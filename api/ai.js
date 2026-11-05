@@ -85,7 +85,7 @@ const ACTIONS = {
       .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content)
       .map((m) => ({ role: m.role, content: m.content.slice(0, 8000) }))
       .slice(-agent.HISTORY_LIMIT);
-    return agent.sandbox({ channel: channelOf(b.channel), history, text, draft: b.draft });
+    return agent.sandbox({ channel: channelOf(b.channel), history, text, draft: b.draft, priceAgoMin: b.priceAgoMin });
   },
   preview: async (b) => ({ text: await agent.preview({ channel: channelOf(b.channel), draft: b.draft }) })
 };

@@ -287,7 +287,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 - Эмодзи только те, что есть в тексте скрипта. Свои не добавляй.
 
 Вопросы:
-- Перед ответом прочитай всю переписку. Не спрашивай то, что клиент уже сообщил, и не отправляй повторно уже отправленные тексты и прайсы.
+- Перед ответом прочитай всю переписку. Не спрашивай то, что клиент уже сообщил, и не отправляй повторно уже отправленные тексты. Повторный запрос прайса решай по разделу «Состояние этого чата».
 - Спрашивай только то, что предусмотрено скриптом или нужно для расчёта и записи. Вопросы из раздела скрипта задавай его словами, а из списка вопросов убирай только то, что клиент уже сообщил.
 - Если вызвала call_admin, больше ни о чём в этом ответе не спрашивай.
 
@@ -616,6 +616,37 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return isFirst ? igFirstContact(text, !!m[1]) : '';
   }
 
+  /* Повторный прайс в Instagram: меньше часа после прошлого — не отправляем, позже — весь прайс заново.
+     Время знает только код, поэтому модель получает подсказку, а igPriceGuard проверяет её ответ. */
+  const priceKey = (id) => `ai:price:ig:${id}`;
+  const PRICE_TTL = 30 * 24 * 3600;
+  const PRICE_HOUR = 3600 * 1000;
+  const PRICE_TAG = /\[\[photo:(women-candela-deka|women-hairboss|men-candela)-(ru|uz)\]\]/;
+  const PRICE_TAGS = new RegExp(PRICE_TAG.source, 'g');
+  const PRICE_ABOVE = { ru: 'Прайс уже отправлен выше в переписке.', uz: 'Narxlar ro‘yxati yuqorida, yozishmada yuborilgan.' };
+
+  /* сколько мс прошло с прошлого прайса; null — прайса ещё не было. В старых чатах времени нет: считаем, что давно */
+  function priceAgo(who, history) {
+    if (who.priceAt) return Date.now() - who.priceAt;
+    return history.some((m) => PRICE_TAG.test(String(m.content))) ? Infinity : null;
+  }
+
+  function igPriceGuard(answer, ago) {
+    const first = String(answer).match(PRICE_TAG);
+    if (!first) return answer;
+    const lang = first[2];
+    if (ago != null && ago < PRICE_HOUR) {
+      return String(answer).replace(PRICE_TAGS, '').replace(/\n{3,}/g, '\n\n').trim() || PRICE_ABOVE[lang];
+    }
+    if (first[1] === 'men-candela') return answer;
+    let placed = false; // девушке всегда оба фото, даже если она спросила про один аппарат
+    return String(answer).replace(PRICE_TAGS, () => {
+      if (placed) return '';
+      placed = true;
+      return `[[photo:women-candela-deka-${lang}]]\n[[photo:women-hairboss-${lang}]]`;
+    });
+  }
+
   async function igReply(who, text) {
     const first = await store.once(igDoneKey(who.chatId), IG_DONE_TTL);
     const history = (await store.get(histKey('ig', who.chatId))) || [];
@@ -636,7 +667,9 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     if (!first && !history.length) return null; // чат вёл администратор, истории у ИИ нет: не вступаем посреди разговора
     let answer;
     try {
-      answer = igExpand(await generate(who, history, text, promptsFrom((await savedCfg()).values)), text, !history.length);
+      who.priceAt = await store.get(priceKey(who.chatId));
+      const raw = await generate(who, history, text, promptsFrom((await savedCfg()).values));
+      answer = igPriceGuard(igExpand(raw, text, !history.length), priceAgo(who, history));
     } catch (e) {
       if (first) await store.del(igDoneKey(who.chatId)); // следующее сообщение клиента считается первым
       throw e;
@@ -647,6 +680,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       await pause('ig', who.chatId);
       return null;
     }
+    if (PRICE_TAG.test(answer)) await store.set(priceKey(who.chatId), Date.now(), PRICE_TTL);
     const next = [...history, { role: 'user', content: text }, { role: 'assistant', content: answer }].slice(-HISTORY_LIMIT);
     await store.set(histKey('ig', who.chatId), next, HISTORY_TTL);
     return parts;
@@ -678,11 +712,12 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const systemFor = (channel, prompts) => (channel === 'ig' ? systemIg(prompts) : systemTg(prompts));
 
   /* проверка в панели: тот же агент, но с черновиком вместо сохранённых текстов, без отправок, истории и паузы */
-  async function sandbox({ channel, history, text, draft }) {
+  async function sandbox({ channel, history, text, draft, priceAgoMin }) {
     const prompts = promptsFrom({ ...(await savedCfg()).values, ...cleanValues(draft) });
     const who = { channel, chatId: 'panel-test', label: 'проверка в панели', test: true, calls: [] };
+    if (Number(priceAgoMin) > 0) who.priceAt = Date.now() - Number(priceAgoMin) * 60000;
     const raw = await generate(who, history, text, prompts);
-    const answer = channel === 'ig' ? igExpand(raw, text, !history.length) : raw;
+    const answer = channel === 'ig' ? igPriceGuard(igExpand(raw, text, !history.length), priceAgo(who, history)) : raw;
     return { answer, parts: toParts(answer, photoUrl), calls: who.calls };
   }
 
@@ -699,6 +734,9 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     if (isIg) {
       notes.push(`Приветствие сейчас: RU — ${greeting()} UZ — Assalomu alaykum!`);
       notes.push(history.length ? 'Это не первое сообщение клиента: не здоровайся заново, метки серии не используй.' : 'Это первое сообщение клиента в этом чате.');
+      const ago = priceAgo(who, history);
+      if (ago != null && ago < PRICE_HOUR) notes.push(`Прайс отправлен в этом чате меньше часа назад. Если клиент снова просит прайс, фото не отправляй и напиши только: RU «${PRICE_ABOVE.ru}» UZ «${PRICE_ABOVE.uz}»`);
+      else if (ago != null) notes.push('Прайс отправлялся в этом чате больше часа назад. Если клиент снова просит прайс, в том числе на один аппарат, отправь весь прайс заново: девушке оба женских фото, мужчине мужское фото.');
     }
     if (!who.test && await wasSent('booking', who)) notes.push('Заявка этого клиента уже отправлена администраторам — submit_booking больше не вызывай, изменения администратор увидит в чате.');
     if (!who.test && await wasSent('admin', who)) notes.push('Администратор уже позван в этот чат — call_admin больше не вызывай, скажи, что он скоро ответит.');
@@ -751,6 +789,6 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   return {
     reply, pause, isPaused, pausedIg, resumeIg, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
-    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
+    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
 };
