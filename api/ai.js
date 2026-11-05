@@ -56,6 +56,23 @@ const ACTIONS = {
     const ids = (await agent.pausedIg()).slice(0, 50);
     return { chats: await Promise.all(ids.map(async (id) => ({ id, name: await clientName(id) }))) };
   },
+  /* очистить память ИИ об одном чате: логин ищем среди чатов, которые ИИ помнит */
+  async 'chat.reset'(b) {
+    const login = String(b.username || '').trim().replace(/^@/, '').toLowerCase();
+    if (!login) throw Object.assign(new Error('Укажите логин аккаунта.'), { status: 400 });
+    const { clientName } = require('./ig');
+    const ids = await agent.igChatIds();
+    for (let i = 0; i < ids.length; i += 20) {
+      const part = ids.slice(i, i + 20);
+      const names = await Promise.all(part.map((id) => clientName(id)));
+      const hit = names.findIndex((n) => String(n).toLowerCase() === '@' + login);
+      if (hit >= 0) {
+        await agent.igForget(part[hit]);
+        return { reset: true, username: login };
+      }
+    }
+    throw Object.assign(new Error('ИИ не помнит чат с этим логином.'), { status: 404 });
+  },
   async 'paused.resume'(b) {
     await agent.resumeIg(String(b.id));
     return { ok: true };

@@ -711,6 +711,22 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const igFinal = (raw, who, history, text) => igPriceQuestions(
     igPriceGuard(igCalm(igExpand(raw, text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text);
 
+  /* все чаты Instagram, про которые ИИ что-то помнит */
+  async function igChatIds() {
+    const prefixes = [histKey('ig', ''), igDoneKey(''), pauseKey('ig', '')];
+    const found = await Promise.all(prefixes.map(async (x) => (await store.keys(x)).map((k) => k.slice(x.length))));
+    return [...new Set(found.flat())];
+  }
+
+  /* забыть чат целиком: следующее сообщение клиента будет для ИИ первым */
+  async function igForget(chatId) {
+    await Promise.all([
+      histKey('ig', chatId), igDoneKey(chatId), priceKey(chatId), pauseKey('ig', chatId),
+      ...Object.keys(NOTIFY_TTL).map((kind) => sentKey(kind, 'ig', chatId)),
+      `ig:buf:${chatId}`, `ig:last:${chatId}`
+    ].map((k) => store.del(k)));
+  }
+
   async function igReply(who, text) {
     const first = await store.once(igDoneKey(who.chatId), IG_DONE_TTL);
     const history = (await store.get(histKey('ig', who.chatId))) || [];
@@ -852,7 +868,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   return {
-    reply, pause, isPaused, pausedIg, resumeIg, igOnly, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
+    reply, pause, isPaused, pausedIg, resumeIg, igOnly, igChatIds, igForget, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
     _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };

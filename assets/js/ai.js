@@ -229,6 +229,11 @@
         <b><strong>Только один аккаунт Instagram</strong>Если указан логин, ИИ отвечает только ему, а в остальных чатах молчит. Пусто — отвечает всем.</b>
         <input class="p-input" type="text" value="${esc(S.settings.igOnly || '')}" placeholder="логин" aria-label="Логин аккаунта Instagram" data-ig-only>
       </div>
+      <div class="p-pause">
+        <b><strong>Начать чат заново</strong>ИИ забудет переписку с этим аккаунтом, и его следующее сообщение станет первым. В Instagram переписка не удалится.</b>
+        <input class="p-input" type="text" placeholder="логин" aria-label="Логин аккаунта Instagram для очистки памяти" data-reset-login>
+        <button class="btn btn--ghost btn--sm" data-reset-chat>Очистить</button>
+      </div>
       <div class="p-pause" data-paused-box>
         <b><strong>Чаты Instagram на паузе</strong><span data-paused>Загружаю…</span></b>
       </div>`;
@@ -243,6 +248,11 @@
     $('[data-ig-model]', v).onclick = async () => {
       const r = await act(() => api('settings', { patch: { igModel: !S.settings.igModel } }), S.settings.igModel ? 'Ответы модели в Instagram выключены' : 'Ответы модели в Instagram включены');
       if (r) { S.settings = r.settings; render(); }
+    };
+    $('[data-reset-chat]', v).onclick = async () => {
+      const input = $('[data-reset-login]', v);
+      const r = await act(() => api('chat.reset', { username: input.value }), 'Память чата очищена');
+      if (r) { input.value = ''; loadPaused(v); }
     };
     $('[data-ig-only]', v).onchange = async (e) => {
       const r = await act(() => api('settings', { patch: { igOnly: e.target.value } }), e.target.value.trim() ? 'ИИ отвечает только этому аккаунту' : 'ИИ отвечает всем');
