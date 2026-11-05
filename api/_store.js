@@ -71,4 +71,17 @@ async function take(key) {
   return list.map((v) => JSON.parse(v));
 }
 
-module.exports = { get, set, del, once, push, take, persistent: () => !!redisConf() };
+/* все ключи с этим началом */
+async function keys(prefix) {
+  if (!redisConf()) return [...mem.keys()].filter((k) => k.startsWith(prefix) && memGet(k) != null);
+  const found = [];
+  let cursor = '0';
+  do {
+    const [next, batch] = await redis(['SCAN', cursor, 'MATCH', prefix + '*', 'COUNT', 200]);
+    cursor = String(next);
+    found.push(...batch);
+  } while (cursor !== '0');
+  return [...new Set(found)];
+}
+
+module.exports = { get, set, del, once, push, take, keys, persistent: () => !!redisConf() };

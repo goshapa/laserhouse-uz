@@ -144,4 +144,9 @@ module.exports = async (req, res) => {
   return res.status(200).json({ ok: true });
 };
 
+module.exports.clientName = async (igsid) => {
+  const p = await ig(`${igsid}?fields=name,username`);
+  return p.username ? '@' + p.username : p.name || 'Клиент';
+};
+
 module.exports.config = { api: { bodyParser: false } };

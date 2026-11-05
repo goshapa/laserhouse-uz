@@ -224,7 +224,11 @@
         <b><strong>Пауза после живого ответа</strong>Если администратор сам ответил клиенту или ИИ позвал администратора, ИИ молчит в этом чате столько часов.</b>
         <input class="p-input" type="number" min="1" max="168" value="${S.settings.pauseHours}" aria-label="Пауза в часах" data-pause>
         <span class="muted">часов</span>
+      </div>
+      <div class="p-pause" data-paused-box>
+        <b><strong>Чаты Instagram на паузе</strong><span data-paused>Загружаю…</span></b>
       </div>`;
+    loadPaused(v);
     $$('[data-toggle]', v).forEach((b) => {
       b.onclick = async () => {
         const key = b.dataset.toggle + 'Enabled';
@@ -240,6 +244,26 @@
       const r = await act(() => api('settings', { patch: { pauseHours: Number(e.target.value) } }), 'Пауза изменена');
       if (r) S.settings = r.settings; else e.target.value = S.settings.pauseHours;
     };
+  }
+
+  async function loadPaused(v) {
+    const box = $('[data-paused]', v);
+    if (!box) return;
+    const r = await act(() => api('paused.list'));
+    if (!r) { box.textContent = 'Не удалось загрузить список.'; return; }
+    box.textContent = r.chats.length ? '' : 'Сейчас таких чатов нет.';
+    for (const c of r.chats) {
+      const row = document.createElement('div');
+      row.textContent = c.name + ' ';
+      const b = document.createElement('button');
+      b.className = 'btn btn--ghost btn--sm';
+      b.textContent = 'Снять паузу';
+      b.onclick = async () => {
+        if (await act(() => api('paused.resume', { id: c.id }), 'Пауза снята')) row.remove();
+      };
+      row.append(b);
+      box.append(row);
+    }
   }
 
   /* ---------- поведение ---------- */

@@ -51,6 +51,16 @@ const ACTIONS = {
   },
   settings: async (b) => ({ settings: await agent.setSettings(b.patch || {}) }),
 
+  async 'paused.list'() {
+    const { clientName } = require('./ig');
+    const ids = (await agent.pausedIg()).slice(0, 50);
+    return { chats: await Promise.all(ids.map(async (id) => ({ id, name: await clientName(id) }))) };
+  },
+  async 'paused.resume'(b) {
+    await agent.resumeIg(String(b.id));
+    return { ok: true };
+  },
+
   async 'rule.add'(b, me) {
     const text = String(b.text || '').trim();
     if (!text) throw Object.assign(new Error('Напишите текст правила.'), { status: 400 });

@@ -484,6 +484,12 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     if (channel === 'ig') await store.once(igDoneKey(chatId), IG_DONE_TTL); // администратор уже ведёт чат — серия ему не нужна
   }
   const isPaused = async (channel, chatId) => !!(await store.get(pauseKey(channel, chatId)));
+  /* чаты Instagram на паузе и снятие паузы из панели */
+  const pausedIg = async () => (await store.keys(pauseKey('ig', ''))).map((k) => k.slice(pauseKey('ig', '').length));
+  async function resumeIg(chatId) {
+    await store.del(pauseKey('ig', chatId));
+    await store.del(sentKey('admin', 'ig', chatId)); // если снова понадобится администратор, уведомление придёт заново
+  }
 
   /* отвечает ли агент в этом чате: ключ есть, канал включён в панели, живой администратор не перехватил чат */
   async function active(channel, chatId) {
@@ -743,7 +749,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   return {
-    reply, pause, isPaused, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
+    reply, pause, isPaused, pausedIg, resumeIg, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
     _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
