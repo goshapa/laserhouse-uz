@@ -83,6 +83,13 @@ async function handleEvent(ev) {
   const incoming = (m.text || '').trim();
   if (!incoming || !(await agent.active('ig', ev.sender.id))) return;
 
+  // ИИ оставлен для одного аккаунта: остальным не отвечаем совсем. Логин не узнали — тоже молчим
+  const only = await agent.igOnly();
+  if (only) {
+    const p = await ig(`${ev.sender.id}?fields=username`);
+    if (String(p.username || '').toLowerCase() !== only) return;
+  }
+
   // клиенты часто пишут несколько сообщений подряд: ждём паузу и отвечаем один раз на всё сразу
   const bufKey = `ig:buf:${ev.sender.id}`;
   const lastKey = `ig:last:${ev.sender.id}`;

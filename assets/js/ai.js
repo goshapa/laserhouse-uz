@@ -225,6 +225,10 @@
         <input class="p-input" type="number" min="1" max="168" value="${S.settings.pauseHours}" aria-label="Пауза в часах" data-pause>
         <span class="muted">часов</span>
       </div>
+      <div class="p-pause">
+        <b><strong>Только один аккаунт Instagram</strong>Если указан логин, ИИ отвечает только ему, а в остальных чатах молчит. Пусто — отвечает всем.</b>
+        <input class="p-input" type="text" value="${esc(S.settings.igOnly || '')}" placeholder="логин" aria-label="Логин аккаунта Instagram" data-ig-only>
+      </div>
       <div class="p-pause" data-paused-box>
         <b><strong>Чаты Instagram на паузе</strong><span data-paused>Загружаю…</span></b>
       </div>`;
@@ -239,6 +243,10 @@
     $('[data-ig-model]', v).onclick = async () => {
       const r = await act(() => api('settings', { patch: { igModel: !S.settings.igModel } }), S.settings.igModel ? 'Ответы модели в Instagram выключены' : 'Ответы модели в Instagram включены');
       if (r) { S.settings = r.settings; render(); }
+    };
+    $('[data-ig-only]', v).onchange = async (e) => {
+      const r = await act(() => api('settings', { patch: { igOnly: e.target.value } }), e.target.value.trim() ? 'ИИ отвечает только этому аккаунту' : 'ИИ отвечает всем');
+      if (r) { S.settings = r.settings; e.target.value = S.settings.igOnly; } else e.target.value = S.settings.igOnly || '';
     };
     $('[data-pause]', v).onchange = async (e) => {
       const r = await act(() => api('settings', { patch: { pauseHours: Number(e.target.value) } }), 'Пауза изменена');

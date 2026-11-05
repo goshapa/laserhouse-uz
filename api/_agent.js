@@ -386,13 +386,14 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   /* ---------- настройки из панели /ai: переключатели каналов и пауза (отдельный короткий ключ) ---------- */
   const SETTINGS = 'ai:settings';
-  const settingsDefaults = () => ({ tgEnabled: true, igEnabled: true, igModel: false, pauseHours: Number(process.env.AI_PAUSE_HOURS) || 12 });
+  const settingsDefaults = () => ({ tgEnabled: true, igEnabled: true, igModel: false, igOnly: '', pauseHours: Number(process.env.AI_PAUSE_HOURS) || 12 });
   const getSettings = async () => ({ ...settingsDefaults(), ...((await store.get(SETTINGS)) || {}) });
   async function setSettings(patch) {
     const next = await getSettings();
     if (patch.tgEnabled !== undefined) next.tgEnabled = !!patch.tgEnabled;
     if (patch.igEnabled !== undefined) next.igEnabled = !!patch.igEnabled;
     if (patch.igModel !== undefined) next.igModel = !!patch.igModel;
+    if (patch.igOnly !== undefined) next.igOnly = String(patch.igOnly).trim().replace(/^@/, '').toLowerCase();
     if (patch.pauseHours !== undefined) {
       const h = Number(patch.pauseHours);
       if (!Number.isInteger(h) || h < 1 || h > 168) throw panelError('Пауза — целое число часов от 1 до 168.');
@@ -402,6 +403,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return next;
   }
   const pauseHours = async () => (await getSettings()).pauseHours;
+  /* логин единственного аккаунта Instagram, которому отвечает ИИ; пусто — отвечает всем */
+  const igOnly = async () => (await getSettings()).igOnly || '';
 
   /* ---------- тексты инструкции из панели: в ai:cfg только отличия от DEFAULTS, каждая правка — новая версия ---------- */
   const CFG = 'ai:cfg';
@@ -849,7 +852,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   return {
-    reply, pause, isPaused, pausedIg, resumeIg, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
+    reply, pause, isPaused, pausedIg, resumeIg, igOnly, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
     _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
