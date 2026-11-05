@@ -595,6 +595,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   /* Instagram: серия первого контакта всегда из кода. Модель решает только, нужна ли она, меткой [[series]] */
   const igDoneKey = (id) => `ai:done:ig:${id}`;
+  const PRICE_ASK = {
+    ru: { zones: 'Какие зоны Вас интересуют?', before: 'Вы ранее пользовались услугами лазерной эпиляции?' },
+    uz: { zones: 'Qaysi sohalarni lazer epilyatsiya qildirmoqchisiz?', before: 'Siz ilgari lazer epilyatsiyasi xizmatlaridan foydalanganmisiz?' }
+  };
   const IG_DONE_TTL = 10 * 365 * 24 * 3600;
 
   function igFirstContact(text, men) {
@@ -605,8 +609,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
         : `${greeting()}\n\n${MEN_INTRO_RU}\n[[photo:men-candela-ru]]\n===\nКакие зоны Вас интересуют?`;
     }
     return uz
-      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\nSiz ilgari lazer epilyatsiyasi xizmatlaridan foydalanganmisiz?`
-      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\nВы ранее пользовались услугами лазерной эпиляции?`;
+      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\n${PRICE_ASK.uz.zones}\n${PRICE_ASK.uz.before}`
+      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\n${PRICE_ASK.ru.zones}\n${PRICE_ASK.ru.before}`;
   }
 
   /* метка серии от модели → текст серии; серия возможна только первым сообщением, иначе ответа нет и зовём администратора */
@@ -646,6 +650,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   function igPriceGuard(answer, ago, men) {
+    if (String(answer).includes(PRICE_ABOVE.ru)) return PRICE_ABOVE.ru;
+    if (String(answer).includes(PRICE_ABOVE.uz)) return PRICE_ABOVE.uz;
     const first = String(answer).match(PRICE_TAG);
     if (!first) return answer;
     const lang = first[2];
@@ -669,6 +675,32 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     });
   }
 
+  /* После фото прайса — вопросы про зоны и опыт. Спрашиваем только то, что клиент ещё не сообщил.
+     Мужчинам про опыт не спрашиваем: так в скрипте (раздел 1.4). */
+  const NAMED_ZONE = /(^|[^а-яё])(ног|рук|лиц|губ|спин|живот|ше[яиюе]|груд|бикини|подмышк|ягодиц|бород|ус[ыи]|усик)|bikini|qo.ltiq|oyoq|yuz\b|mo.ylov|soqol/i;
+  const TOLD_BEFORE = /раньше|ранее|делал|пользовал|проходил|ilgari|qilganman|qildirganman/i;
+  const YES_NO = /^\s*(да|нет|не\s|конечно|ha\b|yo.?q)/i;
+
+  function igPriceQuestions(answer, history, text) {
+    const all = String(answer);
+    const tags = all.match(PRICE_TAGS);
+    if (!tags || photoFailed(text)) return answer;
+    if (all.slice(all.lastIndexOf(tags[tags.length - 1])).includes('?')) return answer;
+    const lang = tags[0].endsWith('-uz]]') ? 'uz' : 'ru';
+    const ask = PRICE_ASK[lang];
+    const said = [...history.filter((m) => m.role === 'user').map((m) => String(m.content)), String(text)];
+    const answered = (q) => history.some((m, i) => m.role === 'assistant' && String(m.content).includes(q) &&
+      history[i + 1] && YES_NO.test(String(history[i + 1].content)));
+    const questions = [];
+    if (!said.some((t) => NAMED_ZONE.test(t))) questions.push(ask.zones);
+    if (!tags[0].startsWith('[[photo:men-') && !said.some((t) => TOLD_BEFORE.test(t)) && !answered(ask.before)) questions.push(ask.before);
+    return questions.length ? `${all.trim()}\n===\n${questions.join('\n')}` : answer;
+  }
+
+  /* все проверки ответа модели в Instagram, одинаково в чате и в проверке из панели */
+  const igFinal = (raw, who, history, text) => igPriceQuestions(
+    igPriceGuard(igExpand(raw, text, !history.length), priceAgoFor(who, history, text), menChat(history, text)), history, text);
+
   async function igReply(who, text) {
     const first = await store.once(igDoneKey(who.chatId), IG_DONE_TTL);
     const history = (await store.get(histKey('ig', who.chatId))) || [];
@@ -691,7 +723,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     try {
       who.priceAt = await store.get(priceKey(who.chatId));
       const raw = await generate(who, history, text, promptsFrom((await savedCfg()).values));
-      answer = igPriceGuard(igExpand(raw, text, !history.length), priceAgoFor(who, history, text), menChat(history, text));
+      answer = igFinal(raw, who, history, text);
     } catch (e) {
       if (first) await store.del(igDoneKey(who.chatId)); // следующее сообщение клиента считается первым
       throw e;
@@ -739,7 +771,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     const who = { channel, chatId: 'panel-test', label: 'проверка в панели', test: true, calls: [] };
     if (Number(priceAgoMin) > 0) who.priceAt = Date.now() - Number(priceAgoMin) * 60000;
     const raw = await generate(who, history, text, prompts);
-    const answer = channel === 'ig' ? igPriceGuard(igExpand(raw, text, !history.length), priceAgoFor(who, history, text), menChat(history, text)) : raw;
+    const answer = channel === 'ig' ? igFinal(raw, who, history, text) : raw;
     return { answer, parts: toParts(answer, photoUrl), calls: who.calls };
   }
 
@@ -812,6 +844,6 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   return {
     reply, pause, isPaused, pausedIg, resumeIg, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
-    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
+    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
 };

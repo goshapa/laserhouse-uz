@@ -140,9 +140,11 @@
 #### ④ Вопрос клиенту
 
 **RU:**
+> Какие зоны Вас интересуют?
 > Вы ранее пользовались услугами лазерной эпиляции?
 
 **UZ:**
+> Qaysi sohalarni lazer epilyatsiya qildirmoqchisiz?
 > Siz ilgari lazer epilyatsiyasi xizmatlaridan foydalanganmisiz?
 
 ---
