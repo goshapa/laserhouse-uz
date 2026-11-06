@@ -84,4 +84,11 @@ async function keys(prefix) {
   return [...new Set(found)];
 }
 
-module.exports = { get, set, del, once, push, take, keys, persistent: () => !!redisConf() };
+/* сколько секунд ключ ещё проживёт; null — нет срока или ключа */
+async function ttl(key) {
+  if (!redisConf()) { const e = mem.get(key); return e && e.exp ? Math.round((e.exp - Date.now()) / 1000) : null; }
+  const t = await redis(['TTL', key]);
+  return t > 0 ? t : null;
+}
+
+module.exports = { get, set, del, once, push, take, keys, ttl, persistent: () => !!redisConf() };

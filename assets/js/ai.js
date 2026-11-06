@@ -19,7 +19,7 @@
     { key: 'ig', title: 'Инструкция для Instagram', where: 'Только Instagram', lead: 'Как вести диалог в Директе и как пользоваться скриптом.' }
   ];
   const KEY_NAME = { ...Object.fromEntries(BLOCKS.map((b) => [b.key, b.title])), script: 'Скрипт' };
-  const TABS = [['overview', 'Обзор'], ['behavior', 'Поведение'], ['script', 'Скрипт'], ['rules', 'Правила'], ['test', 'Проверка'], ['history', 'История']];
+  const TABS = [['overview', 'Обзор'], ['behavior', 'Поведение'], ['script', 'Скрипт'], ['rules', 'Правила'], ['test', 'Проверка'], ['chats', 'Переписки'], ['history', 'История']];
 
   let S = null;       // состояние с сервера
   let draft = {};     // несохранённые тексты по ключам блоков
@@ -493,6 +493,46 @@
   }
 
   /* ---------- история ---------- */
+  /* ---------- переписки Instagram: что писал клиент и что ответил ИИ ---------- */
+  const PHOTO_NAME = { 'women-candela-deka': 'Прайс Candela / DEKA', 'women-hairboss': 'Прайс HairBoss', 'men-candela': 'Мужской прайс Candela', phototypes: 'Фототипы кожи' };
+  function chatBubbles(text) {
+    return String(text).split(/^\s*===\s*$/m).flatMap((chunk) => chunk.split(/(\[\[photo:[\w-]+\]\])/)).map((piece) => {
+      const ph = piece.match(/^\[\[photo:([\w-]+)\]\]$/);
+      if (ph) {
+        const key = ph[1];
+        const name = PHOTO_NAME[key.replace(/-(ru|uz)$/, '')] || key;
+        return `<div class="p-msg p-msg--ai"><img src="/assets/img/prices/${esc(key)}.jpg" alt="${esc(name)}" loading="lazy"><br><small>${esc(name)}</small></div>`;
+      }
+      return piece.trim() ? `<div class="p-msg p-msg--ai">${esc(piece.trim())}</div>` : '';
+    }).join('');
+  }
+
+  function viewChats(v) {
+    v.innerHTML = `${head('Переписки', 'Что ответил <em>ИИ</em>', 'Введите логин клиента в Instagram или ссылку на профиль. Видно то, что помнит ИИ: сообщения клиента и ответы ИИ за последний месяц, до 30 сообщений. Ответы, которые администратор писал вручную, здесь не видны.')}
+      <div class="p-pause">
+        <input class="p-input" type="text" placeholder="логин или ссылка" aria-label="Логин клиента в Instagram" data-chat-login style="flex:1">
+        <button class="btn btn--primary btn--sm" data-chat-open>Показать</button>
+      </div>
+      <div data-chat-out></div>`;
+    const input = $('[data-chat-login]', v);
+    const out = $('[data-chat-out]', v);
+    const open = async () => {
+      if (!input.value.trim()) return;
+      out.innerHTML = '<p class="muted">Ищу переписку…</p>';
+      const r = await act(() => api('chat.view', { username: input.value }));
+      if (!r) { out.innerHTML = ''; return; }
+      const state = [
+        r.paused ? `ИИ молчит в этом чате${r.pauseLeft ? ` ещё ${Math.ceil(r.pauseLeft / 3600)} ч` : ''}: ответил или позван администратор` : 'ИИ отвечает в этом чате',
+        r.priceAt ? `прайс отправлен ${fmtDate(new Date(r.priceAt).toISOString())}` : ''
+      ].filter(Boolean).join(' · ');
+      const msgs = r.history.map((m) => (m.role === 'user' ? `<div class="p-msg p-msg--user">${esc(m.content)}</div>` : chatBubbles(m.content))).join('');
+      out.innerHTML = `<p class="muted">@${esc(r.username)} · ${esc(state)}</p>
+        <div class="p-chat" style="height:auto;max-height:72vh"><div class="p-chat__log">${msgs || '<p class="p-chat__hint">ИИ пока ничего не помнит об этом чате</p>'}</div></div>`;
+    };
+    $('[data-chat-open]', v).onclick = open;
+    input.onkeydown = (e) => { if (e.key === 'Enter') open(); };
+  }
+
   function viewHistory(v) {
     const names = (changed) => changed.map((k) => KEY_NAME[k] || k).join(', ');
     const rows = S.log.map((e) => `<div class="p-ver"><div class="p-ver__n">№${e.rev}</div>
@@ -515,7 +555,7 @@
     });
   }
 
-  const VIEWS = { overview: viewOverview, behavior: viewBehavior, script: viewScript, rules: viewRules, test: viewTest, history: viewHistory };
+  const VIEWS = { overview: viewOverview, behavior: viewBehavior, script: viewScript, rules: viewRules, test: viewTest, chats: viewChats, history: viewHistory };
 
   window.addEventListener('beforeunload', (e) => { if (S && dirtyKeys().length) e.preventDefault(); });
 

@@ -716,6 +716,14 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return [...new Set(found.flat())];
   }
 
+  /* что ИИ помнит о чате: для вкладки «Переписки» в панели */
+  async function igChatInfo(chatId) {
+    const [history, paused, priceAt, pauseLeft] = await Promise.all([
+      store.get(histKey('ig', chatId)), isPaused('ig', chatId), store.get(priceKey(chatId)), store.ttl ? store.ttl(pauseKey('ig', chatId)) : null
+    ]);
+    return { history: history || [], paused, pauseLeft: pauseLeft > 0 ? pauseLeft : null, priceAt: priceAt || null };
+  }
+
   /* забыть чат целиком: следующее сообщение клиента будет для ИИ первым */
   async function igForget(chatId) {
     await Promise.all([
@@ -866,7 +874,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   return {
-    reply, pause, isPaused, pausedIg, resumeIg, igOnly, igChatIds, igForget, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
+    reply, pause, isPaused, pausedIg, resumeIg, igOnly, igChatIds, igForget, igChatInfo, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
     _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _tgCalm: tgCalm, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };

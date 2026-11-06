@@ -36,6 +36,27 @@ async function state(me) {
 }
 
 const channelOf = (v) => (v === 'ig' ? 'ig' : 'tg');
+
+/* чат Instagram по логину: сначала из запомненных, иначе перебираем чаты, которые помнит ИИ */
+const loginOf = (v) => String(v || '').trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/[/?#].*$/, '').toLowerCase();
+async function findIgChat(raw) {
+  const login = loginOf(raw);
+  if (!login) throw Object.assign(new Error('Укажите логин аккаунта.'), { status: 400 });
+  const cached = await store.get(`ig:login:${login}`);
+  if (cached) return cached;
+  const { clientName } = require('./ig');
+  const ids = await agent.igChatIds();
+  for (let i = 0; i < ids.length; i += 20) {
+    const part = ids.slice(i, i + 20);
+    const names = await Promise.all(part.map((id) => clientName(id)));
+    const hit = names.findIndex((n) => String(n).toLowerCase() === '@' + login);
+    if (hit >= 0) {
+      await store.set(`ig:login:${login}`, part[hit], 30 * 24 * 3600);
+      return part[hit];
+    }
+  }
+  throw Object.assign(new Error('ИИ не помнит чат с этим логином.'), { status: 404 });
+}
 const badRule = () => Object.assign(new Error('Список правил изменился, например из бота. Обновите страницу.'), { status: 409 });
 
 const ACTIONS = {
@@ -56,22 +77,16 @@ const ACTIONS = {
     const ids = (await agent.pausedIg()).slice(0, 50);
     return { chats: await Promise.all(ids.map(async (id) => ({ id, name: await clientName(id) }))) };
   },
-  /* очистить память ИИ об одном чате: логин ищем среди чатов, которые ИИ помнит */
+  /* очистить память ИИ об одном чате */
   async 'chat.reset'(b) {
-    const login = String(b.username || '').trim().replace(/^@/, '').toLowerCase();
-    if (!login) throw Object.assign(new Error('Укажите логин аккаунта.'), { status: 400 });
-    const { clientName } = require('./ig');
-    const ids = await agent.igChatIds();
-    for (let i = 0; i < ids.length; i += 20) {
-      const part = ids.slice(i, i + 20);
-      const names = await Promise.all(part.map((id) => clientName(id)));
-      const hit = names.findIndex((n) => String(n).toLowerCase() === '@' + login);
-      if (hit >= 0) {
-        await agent.igForget(part[hit]);
-        return { reset: true, username: login };
-      }
-    }
-    throw Object.assign(new Error('ИИ не помнит чат с этим логином.'), { status: 404 });
+    const id = await findIgChat(b.username);
+    await agent.igForget(id);
+    return { reset: true, username: loginOf(b.username) };
+  },
+  /* переписка клиента с ИИ в Instagram, как её помнит ИИ */
+  async 'chat.view'(b) {
+    const id = await findIgChat(b.username);
+    return { username: loginOf(b.username), ...(await agent.igChatInfo(id)) };
   },
   async 'paused.resume'(b) {
     await agent.resumeIg(String(b.id));
