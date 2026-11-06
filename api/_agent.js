@@ -168,8 +168,15 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   // одна зона под разными ключами в прайсах аппаратов: модель может выбрать любой
   const ZONE_ALIASES = { lip: 'lip_m', lip_m: 'lip', bikini_deep: 'bikini_deep_m', bikini_deep_m: 'bikini_deep' };
 
-  function priceQuote({ sex, device, zones }) {
+  /* блок расчёта в формате студии: заголовок аппарата со стрелкой, «Зона – цена», пустая строка и «Итог» */
+  const PRICE_HEAD = {
+    ru: { women: { candela_deka: 'АЛЕКСАНДРИТ КАНДЕЛА / ДЕКА ⤵️', hairboss: 'ДИОД ⤵️' }, men: { candela_deka: 'АЛЕКСАНДРИТ КАНДЕЛА ⤵️' }, total: 'Итог' },
+    uz: { women: { candela_deka: 'ALEKSANDRIT CANDELA / DEKA ⤵️', hairboss: 'DIOD ⤵️' }, men: { candela_deka: 'ALEKSANDRIT CANDELA ⤵️' }, total: 'Jami' }
+  };
+
+  function priceQuote({ sex, device, zones, lang }) {
     if (sex === 'men' && device !== 'candela_deka') return 'Для мужчин работает только Candela — посчитай на candela_deka.';
+    const L = lang === 'uz' ? 'uz' : 'ru';
     const list = (LH.prices[sex] || {})[DEVICES[device]] || [];
     const lines = [];
     const missing = [];
@@ -179,14 +186,13 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       if (!row) { missing.push(LH.zones[key] ? LH.zones[key].ru : key); continue; }
       const [zone, , price] = row; // зачёркнутую цену и длительность клиентам не называем
       total += price;
-      lines.push(`${LH.zones[zone].ru}: ${money(price)} сум`);
+      lines.push(`${LH.zones[zone][L]} – ${money(price)}`);
     }
-    return [
-      `${sex === 'men' ? 'Мужчины, Candela' : 'Женщины, ' + DEVICE_NAME[device]}, за одну процедуру:`,
-      ...lines,
-      lines.length > 1 ? `Итого: ${money(total)} сум` : lines.length ? '' : 'Ни одной из этих зон нет в прайсе этого аппарата.',
-      missing.length ? `Нет в прайсе этого аппарата: ${missing.join(', ')}` : ''
-    ].filter(Boolean).join('\n');
+    const note = missing.length ? `\n\n(служебно, клиенту не отправляй: нет в прайсе этого аппарата — ${missing.join(', ')})` : '';
+    if (!lines.length) return 'Ни одной из этих зон нет в прайсе этого аппарата.' + note;
+    const block = [PRICE_HEAD[L][sex][device], ...lines];
+    if (lines.length > 1) block.push('', `${PRICE_HEAD[L].total} – ${money(total)}`);
+    return block.join('\n') + note;
   }
 
   const ZONES = ZONE_KEYS.map((k) => `${k} — ${LH.zones[k].ru} / ${LH.zones[k].uz}`).join('\n');
@@ -208,6 +214,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     pricing: `Цены:
 - Любую цену и сумму бери только из price_quote, не называй по памяти и не считай в уме. Всегда говори, на каком аппарате эта цена.
 - Называй только настоящую цену. Старую (зачёркнутую) цену и длительность процедуры не пиши.
+- Расчёт цен вставляй ровно так, как его вернул price_quote: блок аппарата целиком, не меняя строки, тире, пробелы и стрелку. Если считала на двух аппаратах, сначала блок Candela/DEKA, потом диод, между блоками две пустые строки. Перед блоками и после них можно короткую фразу или вопрос. Строку «служебно» клиенту не отправляй.
 - Зоны нет в прайсе одного аппарата — проверь price_quote на другом, прежде чем сказать, что её нет.
 - С мужчинами только Candela. Как только понятно, что пишет мужчина (сам сказал, пишет о себе в мужском роде, мужское имя, спрашивает про бороду и т. п.), говори только о Candela и мужском прайсе: DEKA, HairBoss и женские цены не упоминай.`,
 
@@ -316,9 +323,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
         properties: {
           sex: { type: 'string', enum: ['women', 'men'] },
           device: { type: 'string', enum: ['candela_deka', 'hairboss'], description: 'candela_deka — Candela и DEKA (одни цены), hairboss — HairBoss X-Fest (только женщины)' },
-          zones: { type: 'array', items: { type: 'string', enum: ZONE_KEYS }, description: 'Ключи зон из раздела «Ключи зон для price_quote»' }
+          zones: { type: 'array', items: { type: 'string', enum: ZONE_KEYS }, description: 'Ключи зон из раздела «Ключи зон для price_quote»' },
+          lang: { type: 'string', enum: ['ru', 'uz'], description: 'Язык клиента: uz — узбекский, ru — все остальные' }
         },
-        required: ['sex', 'device', 'zones']
+        required: ['sex', 'device', 'zones', 'lang']
       }
     },
     {
