@@ -15,7 +15,7 @@
     { key: 'character', title: 'Характер', where: 'Только Telegram', lead: 'Как ИИ разговаривает с клиентами: тон, обращение, чего избегать.' },
     { key: 'pricing', title: 'Цены', where: 'Telegram и Instagram', lead: 'Как называть цены. Сами суммы считаются из прайса на сайте: инструмент price_quote не стоит убирать, иначе ИИ начнёт называть цены по памяти.' },
     { key: 'scope', title: 'Границы', where: 'Telegram и Instagram', lead: 'По каким студиям ИИ консультирует и что отвечает про остальные города.' },
-    { key: 'tg', title: 'Инструкция для Telegram', where: 'Только Telegram', lead: 'Как вести диалог и запись в личке Telegram. Факты здесь берутся из данных сайта.' },
+    { key: 'tg', title: 'Инструкция для Telegram', where: 'Только Telegram', lead: 'Как вести диалог и запись в личке Telegram. Факты берутся из скрипта, слова свои.' },
     { key: 'ig', title: 'Инструкция для Instagram', where: 'Только Instagram', lead: 'Как вести диалог в Директе и как пользоваться скриптом.' }
   ];
   const KEY_NAME = { ...Object.fromEntries(BLOCKS.map((b) => [b.key, b.title])), script: 'Скрипт' };
@@ -213,7 +213,7 @@
       <dl class="p-facts">
         <div class="p-fact"><dt>Версия настроек</dt><dd>№${S.rev}<small>${S.rev ? `${esc(S.by)}, ${fmtDate(S.at)}` : 'Исходные тексты'}</small></dd></div>
         <div class="p-fact"><dt>Правила</dt><dd>${active}<small>${S.rules.length - active ? `ещё ${S.rules.length - active} выключено` : 'действуют сейчас'}</small></dd></div>
-        <div class="p-fact"><dt>Скрипт</dt><dd>${sections}<small>разделов, только для Instagram</small></dd></div>
+        <div class="p-fact"><dt>Скрипт</dt><dd>${sections}<small>разделов, Instagram и Telegram</small></dd></div>
         <div class="p-fact"><dt>Изменено блоков</dt><dd>${S.overridden.length}<small>из ${Object.keys(S.defaults).length}, остальные исходные</small></dd></div>
       </dl>
       <div class="p-pause">
@@ -318,7 +318,7 @@
           <button class="p-link p-side__add" data-add>+ Новый раздел</button>
         </div>
         <div>
-          <div class="p-editor__head"><h2 class="h3" data-title>${esc(sectionTitle(sections[ui.section] || ''))}</h2><span class="p-tag">Только Instagram<i class="p-mark" data-mark="script" hidden></i></span></div>
+          <div class="p-editor__head"><h2 class="h3" data-title>${esc(sectionTitle(sections[ui.section] || ''))}</h2><span class="p-tag">Instagram и Telegram<i class="p-mark" data-mark="script" hidden></i></span></div>
           <p class="p-editor__lead">Заголовок раздела начинается с «## », подраздела с «### ». Фото вставляются меткой вроде [[photo:phototypes]].</p>
           <textarea class="p-area p-area--editor" data-editor aria-label="Текст раздела">${esc(sections[ui.section] || '')}</textarea>
           <div class="p-editor__foot"><span data-count="script"></span><span class="p-actions">
