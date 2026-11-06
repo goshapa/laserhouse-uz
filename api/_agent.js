@@ -146,6 +146,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   let client = null;
   const anthropic = () => (client = client || new Anthropic());
 
+  /* прайс для модели: только настоящая цена, без зачёркнутой и без длительности */
+  const plainPrices = (sex, dev, title) => [title, ...(LH.prices[sex][dev] || [])
+    .map(([zone, , price]) => `- ${LH.zones[zone].ru}: ${money(price)}`)].join('\n');
+
   /* ---------- знания для Telegram: те же данные, что на сайте и в боте ---------- */
   function knowledge() {
     const ru = T.ru;
@@ -168,11 +172,11 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       `Сайт: https://laserhouse.uz · Telegram-бот для записи: https://t.me/${LH.links.bot}?start=book · Instagram: ${LH.links.instagram}`,
       '',
       '# Цены (сум, за одну процедуру)',
-      strip(priceText('wa', 'ru')),
+      plainPrices('women', 'alex', 'Женщины, Candela и DEKA'),
       '',
-      strip(priceText('wh', 'ru')),
+      plainPrices('women', 'diode', 'Женщины, HairBoss X-Fest'),
       '',
-      strip(priceText('ma', 'ru')),
+      plainPrices('men', 'alex', 'Мужчины, только Candela'),
       '',
       '# Частые вопросы',
       faq,
@@ -203,19 +207,17 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     const lines = [];
     const missing = [];
     let total = 0;
-    let totalOld = 0;
     for (const key of zones) {
       const row = list.find((r) => r[0] === key) || list.find((r) => r[0] === ZONE_ALIASES[key]);
       if (!row) { missing.push(LH.zones[key] ? LH.zones[key].ru : key); continue; }
-      const [zone, min, price, old] = row;
+      const [zone, , price] = row; // зачёркнутую цену и длительность клиентам не называем
       total += price;
-      totalOld += old || price;
-      lines.push(`${LH.zones[zone].ru}: ${money(price)} сум${old ? ` (без скидки ${money(old)})` : ''}, ~${min} мин`);
+      lines.push(`${LH.zones[zone].ru}: ${money(price)} сум`);
     }
     return [
       `${sex === 'men' ? 'Мужчины, Candela' : 'Женщины, ' + DEVICE_NAME[device]}, за одну процедуру:`,
       ...lines,
-      lines.length ? `Итого: ${money(total)} сум${totalOld > total ? ` (без скидки ${money(totalOld)})` : ''}` : 'Ни одной из этих зон нет в прайсе этого аппарата.',
+      lines.length > 1 ? `Итого: ${money(total)} сум` : lines.length ? '' : 'Ни одной из этих зон нет в прайсе этого аппарата.',
       missing.length ? `Нет в прайсе этого аппарата: ${missing.join(', ')}` : ''
     ].filter(Boolean).join('\n');
   }
@@ -239,6 +241,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
     pricing: `Цены:
 - Любую цену и сумму бери только из price_quote, не называй по памяти и не считай в уме. Всегда говори, на каком аппарате эта цена.
+- Называй только настоящую цену. Старую (зачёркнутую) цену и длительность процедуры не пиши.
 - Зоны нет в прайсе одного аппарата — проверь price_quote на другом, прежде чем сказать, что её нет.
 - С мужчинами только Candela. Как только понятно, что пишет мужчина (сам сказал, пишет о себе в мужском роде, мужское имя, спрашивает про бороду и т. п.), говори только о Candela и мужском прайсе: DEKA, HairBoss и женские цены не упоминай.`,
 

@@ -717,16 +717,28 @@ async function handlePanelLogin(ctx) {
 
 /* Сообщение в личке бизнес-аккаунта (бот подключён в Настройки → Telegram для бизнеса → Чат-боты).
    В личном чате chat.id = id клиента; если from другой — это написал сам владелец аккаунта. */
+const TG_MERGE_WAIT_MS = 6000;
+
 async function handleBusinessMessage(msg) {
   if (msg.chat.type !== 'private' || msg.sender_business_bot) return null; // наши же ответы
   const fromOwner = msg.from && msg.from.id !== msg.chat.id;
   if (fromOwner) return agent.pause('tg', msg.chat.id);
 
-  const text = (msg.text || msg.caption || '').trim();
-  if (!text) return null; // голосовые, стикеры, фото без подписи — отвечает человек
+  const incoming = (msg.text || msg.caption || '').trim();
+  if (!incoming) return null; // голосовые, стикеры, фото без подписи — отвечает человек
   if (!(await agent.active('tg', msg.chat.id))) return null;
-  const who = { channel: 'tg', chatId: msg.chat.id, label: userLink(msg.from || {}) };
   await tg('sendChatAction', { business_connection_id: msg.business_connection_id, chat_id: msg.chat.id, action: 'typing' });
+
+  // клиенты часто пишут несколько сообщений подряд: ждём паузу и отвечаем один раз на всё сразу
+  const bufKey = `tg:buf:${msg.chat.id}`;
+  const lastKey = `tg:last:${msg.chat.id}`;
+  await store.push(bufKey, incoming, 300);
+  await store.set(lastKey, msg.message_id, 300);
+  await new Promise((r) => setTimeout(r, TG_MERGE_WAIT_MS));
+  if ((await store.get(lastKey)) !== msg.message_id) return null; // пришло ещё сообщение: ответит его обработчик
+  const text = (await store.take(bufKey)).join('\n');
+  if (!text) return null;
+  const who = { channel: 'tg', chatId: msg.chat.id, label: userLink(msg.from || {}) };
   let parts = null;
   try {
     parts = await agent.reply(who, text);
