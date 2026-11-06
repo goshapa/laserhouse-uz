@@ -545,6 +545,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   async function runTool(name, input, who) {
+    if (name === 'call_admin') who.adminCalled = true; // в Instagram ответ клиенту после этого — только фраза о передаче
     if (name === 'price_quote') return priceQuote(input);
     // проверка в панели: никому ничего не отправляем и чат не ставим на паузу
     if (who.test) return name === 'submit_booking' ? 'Заявка отправлена администраторам.' : 'Администратор получил уведомление.';
@@ -696,8 +697,17 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const tgCalm = (answer) => String(answer).replace(EMOTION_LINE, '').replace(/^\n+/, '').trim();
 
   /* все проверки ответа модели в Instagram, одинаково в чате и в проверке из панели */
-  const igFinal = (raw, who, history, text) => igPriceQuestions(
-    igPriceGuard(igCalm(igExpand(raw, text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text);
+  /* позвал администратора — клиент получает только точную фразу о передаче, без своих слов модели */
+  const ADMIN_PHRASE = {
+    ru: 'Ваш вопрос передан администратору, он скоро ответит здесь же.',
+    uz: 'Savolingiz administratorga yetkazildi, u tez orada shu yerda javob beradi.'
+  };
+  const igAdminOnly = (answer, who, text) => (who.adminCalled
+    ? ADMIN_PHRASE[!/[а-яё]/i.test(text) && /[a-z]/i.test(text) ? 'uz' : 'ru']
+    : answer);
+
+  const igFinal = (raw, who, history, text) => igAdminOnly(igPriceQuestions(
+    igPriceGuard(igCalm(igExpand(raw, text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text), who, text);
 
   /* все чаты Instagram, про которые ИИ что-то помнит */
   async function igChatIds() {
