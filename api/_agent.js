@@ -686,7 +686,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   /* эмоций не больше, чем в скрипте: чужие эмодзи и поздравления не доходят до клиента, даже если модель их написала */
   const EMOJI = /[ \t]*(\p{Extended_Pictographic})\uFE0F?/gu;
-  const SCRIPT_EMOJI = new Set(['💌', ...[...SCRIPT.matchAll(EMOJI)].map((m) => m[1])]);
+  const SCRIPT_EMOJI = new Set(['💌', '⤵', ...[...SCRIPT.matchAll(EMOJI)].map((m) => m[1])]); // ⤵️ — из блока расчёта цен
   const EMOTION_LINE = /^.*(поздрав|tabrik).*$\n?/gim;
   const igCalm = (answer) => String(answer).replace(EMOTION_LINE, '')
     .replace(EMOJI, (all, icon) => (SCRIPT_EMOJI.has(icon) ? all : '')).replace(/^\n+/, '').trim();
