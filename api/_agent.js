@@ -305,7 +305,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 - Узбекскому клиенту пиши на узбекском (латиница), остальным на русском.
 - Если клиент просит прайс или все цены — отправь фото прайса (метки есть в разделе 1), весь прайс текстом не перечисляй. Другие фото отправляй, только когда это указано в скрипте.
 
-Запись: отправь вопросы из раздела 7.1, убрав то, что клиент уже сообщил, а когда всё известно — раздел 7.2. Заявку отправляй через submit_booking, когда есть имя и телефон, а если клиент просит ему позвонить — сразу с тем, что известно.
+Запись — веди клиента к ней сама:
+- Когда клиент узнал цену на свои зоны, предложи запись вопросом из раздела 7.4 (по правилам из его пометки).
+- Клиент согласился или сам хочет записаться — вопросы из 7.1, убрав то, что он уже сообщил. Когда всё известно — раздел 7.2.
+- Когда есть имя и телефон — вызови submit_booking со всем, что известно (филиал, аппарат, зоны, день и время, имя, телефон), и ответь текстом из 7.5. Если клиент просит ему позвонить — сразу submit_booking с тем, что известно.
 
 Другое:
 - На темы, не связанные со студией, ответь, что можешь помочь только по процедурам в студии.
@@ -567,6 +570,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   async function runTool(name, input, who) {
     if (name === 'call_admin') who.adminCalled = true; // в Instagram ответ клиенту после этого — только фраза о передаче
+    if (name === 'submit_booking') who.booked = true;  // в Instagram ответ — текст 7.5, дальше ведёт администратор
     if (name === 'price_quote') return priceQuote(input);
     // проверка в панели: никому ничего не отправляем и чат не ставим на паузу
     if (who.test) return name === 'submit_booking' ? 'Заявка отправлена администраторам.' : 'Администратор получил уведомление.';
@@ -723,8 +727,14 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     ru: 'Ваш вопрос передан администратору, он скоро ответит здесь же.',
     uz: 'Savolingiz administratorga yetkazildi, u tez orada shu yerda javob beradi.'
   };
-  const igAdminOnly = (answer, who, text) => (who.adminCalled
-    ? ADMIN_PHRASE[!/[а-яё]/i.test(text) && /[a-z]/i.test(text) ? 'uz' : 'ru']
+  /* скрипт, раздел 7.5: заявка ушла администратору */
+  const BOOKED_PHRASE = {
+    ru: 'Спасибо! Администратор свяжется с Вами в ближайшее время и подтвердит запись.',
+    uz: 'Rahmat! Administrator tez orada siz bilan bog‘lanib, yozuvni tasdiqlaydi.'
+  };
+  const langOf = (text) => (!/[а-яё]/i.test(text) && /[a-z]/i.test(text) ? 'uz' : 'ru');
+  const igAdminOnly = (answer, who, text) => (who.adminCalled ? ADMIN_PHRASE[langOf(text)]
+    : who.booked ? BOOKED_PHRASE[langOf(text)]
     : answer);
 
   const PRICE_REQUEST = /прайс|прейскурант|prays|price ?list/i;
@@ -784,6 +794,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       if (first) await store.del(igDoneKey(who.chatId)); // следующее сообщение клиента считается первым
       throw e;
     }
+    if (who.booked && !who.adminCalled) await pause('ig', who.chatId); // заявка у администратора — дальше он ведёт чат
     const parts = toParts(answer, photoUrl);
     if (!parts.length) { // модель не дала ответа: клиент не должен остаться без человека
       await notifyOnce('admin', who, `🙋 <b>Клиент ждёт администратора</b>\n\nОткуда: Instagram · ${who.label}\nИИ не смог ответить на сообщение:\n\n${esc(String(text).slice(0, 500))}`);
