@@ -628,10 +628,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   }
 
   /* метка серии от модели → текст серии; серия возможна только первым сообщением, иначе ответа нет и зовём администратора */
-  function igExpand(answer, text, isFirst) {
+  function igExpand(answer, text, isFirst, menAd) {
     const m = String(answer).match(/\[\[series(:men)?\]\]/);
     if (!m) return answer;
-    return isFirst ? igFirstContact(text, !!m[1]) : '';
+    return isFirst ? igFirstContact(text, !!m[1] || !!menAd) : '';
   }
 
   /* Повторный прайс в Instagram: меньше часа после прошлого — не отправляем, позже — весь прайс заново.
@@ -741,7 +741,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const igSeriesFirst = (raw, history, text) => (!history.length && PRICE_REQUEST.test(text) ? '[[series]]' : raw);
 
   const igFinal = (raw, who, history, text) => igAdminOnly(igPriceQuestions(
-    igPriceGuard(igCalm(igExpand(igSeriesFirst(raw, history, text), text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text), who, text);
+    igPriceGuard(igCalm(igExpand(igSeriesFirst(raw, history, text), text, !history.length, who.menAd)), priceAgoFor(who, history, text), who.menAd || menChat(history, text)), history, text), who, text);
 
   /* все чаты Instagram, про которые ИИ что-то помнит */
   async function igChatIds() {
@@ -855,6 +855,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     if (isIg) {
       notes.push(`Приветствие сейчас: RU — ${greeting()} UZ — Assalomu alaykum!`);
       notes.push(history.length ? 'Это не первое сообщение клиента: не здоровайся заново, метки серии не используй.' : 'Это первое сообщение клиента в этом чате.');
+      if (who.menAd) notes.push('Клиент пришёл по мужской рекламе — это мужчина: только Candela и мужской прайс, серия — [[series:men]].');
       const ago = priceAgo(who, history);
       if (ago != null && photoFailed(text)) notes.push('Клиент пишет, что не видит фото или оно не открылось. Если речь о прайсе, отправь весь прайс заново только метками фото: девушке оба женских фото, мужчине мужское. Администратора не зови и ничего не спрашивай.');
       else if (ago != null && ago < PRICE_HOUR) notes.push(`Прайс отправлен в этом чате меньше часа назад. Если клиент снова просит прайс, фото не отправляй и напиши только: RU «${PRICE_ABOVE.ru}» UZ «${PRICE_ABOVE.uz}»`);

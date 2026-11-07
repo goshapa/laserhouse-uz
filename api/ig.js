@@ -63,7 +63,19 @@ async function clientLabel(igsid) {
 
 const MERGE_WAIT_MS = 6000;
 
+/* Клиент пришёл по рекламе: Instagram присылает её название. Мужская реклама — значит, пишет мужчина */
+const MEN_AD = /мужчин|мужск|муж\b|бород|парн|erkak|soqol|\bmen\b|\bmale\b/i;
+async function rememberAd(ev) {
+  const ref = (ev.message && ev.message.referral) || ev.referral;
+  if (!ref) return;
+  const ctx = ref.ads_context_data || {};
+  const title = String(ctx.ad_title || ref.ad_title || ref.ref || '');
+  console.log('[ig] referral', JSON.stringify({ source: ref.source, type: ref.type, ad_id: ref.ad_id, title: title.slice(0, 80) }));
+  if (MEN_AD.test(title)) await store.set(`ig:men:${ev.sender.id}`, 1, 30 * 24 * 3600);
+}
+
 async function handleEvent(ev) {
+  if (!(ev.message && ev.message.is_echo)) await rememberAd(ev).catch((e) => console.error('[ig] referral', e));
   const m = ev.message;
   if (!m || m.is_deleted) return;
   if (!(await store.once(`ig:m:${m.mid}`, 24 * 3600).catch(() => true))) return; // повтор вебхука
@@ -100,7 +112,7 @@ async function handleEvent(ev) {
   const text = (await store.take(bufKey)).join('\n');
   if (!text) return;
 
-  const who = { channel: 'ig', chatId: ev.sender.id, label: await clientLabel(ev.sender.id) };
+  const who = { channel: 'ig', chatId: ev.sender.id, label: await clientLabel(ev.sender.id), menAd: !!(await store.get(`ig:men:${ev.sender.id}`)) };
   const parts = await agent.reply(who, text);
   if (parts == null) return;
   await store.set(`ig:sending:${ev.sender.id}`, 1, 60);
@@ -139,7 +151,7 @@ module.exports = async (req, res) => {
         changes: (entry.changes || []).map((c) => c.field),
         messaging: (entry.messaging || []).map((ev) => ({
           keys: Object.keys(ev),
-          message: ev.message && { text: !!ev.message.text, echo: !!ev.message.is_echo, attachments: !!ev.message.attachments }
+          message: ev.message && { text: !!ev.message.text, echo: !!ev.message.is_echo, attachments: !!ev.message.attachments, referral: !!ev.message.referral }
         }))
       }));
       await Promise.all((entry.messaging || []).map(handleEvent)); // параллельно: иначе склейка сообщений из одного вебхука не сработает
