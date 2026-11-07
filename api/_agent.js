@@ -619,8 +619,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
         : `${greeting()}\n\n${MEN_INTRO_RU}\n[[photo:men-candela-ru]]\n===\n${BRANCHES_RU}\n===\nКакие зоны Вас интересуют?`;
     }
     return uz
-      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\n${BRANCHES_UZ}\n===\n${PRICE_ASK.uz.zones}\n${PRICE_ASK.uz.before}`
-      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\n${BRANCHES_RU}\n===\n${PRICE_ASK.ru.zones}\n${PRICE_ASK.ru.before}`;
+      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\n${BRANCHES_UZ}\n===\n${PRICE_ASK.uz.before}`
+      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\n${BRANCHES_RU}\n===\n${PRICE_ASK.ru.before}`;
   }
 
   /* метка серии от модели → текст серии; серия возможна только первым сообщением, иначе ответа нет и зовём администратора */
@@ -702,7 +702,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     const answered = (q) => history.some((m, i) => m.role === 'assistant' && String(m.content).includes(q) &&
       history[i + 1] && YES_NO.test(String(history[i + 1].content)));
     const questions = [];
-    if (!said.some((t) => NAMED_ZONE.test(t))) questions.push(ask.zones);
+    if (tags[0].startsWith('[[photo:men-') && !said.some((t) => NAMED_ZONE.test(t))) questions.push(ask.zones);
     if (!tags[0].startsWith('[[photo:men-') && !said.some((t) => TOLD_BEFORE.test(t)) && !answered(ask.before)) questions.push(ask.before);
     return questions.length ? `${all.trim()}\n===\n${questions.join('\n')}` : answer;
   }
