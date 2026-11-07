@@ -100,6 +100,27 @@ Erkaklar uchun eng mashhur sohalar:
 — chuqur bikini sohasi (intim soha)
 — qo‘ltiq osti`;
 
+/* Скрипт, раздел 1.1 ③: филиалы — шаг серии первого контакта (у мужчин тот же текст) */
+const BRANCHES_RU = `Доступны два филиала:
+
+📍 Мирабадский район
+ул. Нукус, 72/2
+(ориентир: посольство России)
+
+📍 Ц-1
+массив Буюк Ипак Йули, 13
+(ориентир: кафе Бибигон)`;
+
+const BRANCHES_UZ = `Ikkita filial mavjud:
+
+📍 Mirobod tumani
+Nukus ko‘chasi, 72/2
+(mo‘ljal: Rossiya elchixonasi)
+
+📍 C-1
+Buyuk Ipak yo‘li massivi, 13
+(mo‘ljal: Bibigon kafesi)`;
+
 /* разбор ответа модели: «===» отделяет сообщения, [[photo:ключ]] — фото на этом месте */
 function toParts(answer, photoUrl) {
   const parts = [];
@@ -272,7 +293,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 - Если вызвала call_admin, больше ни о чём в этом ответе не спрашивай.
 
 Первое сообщение клиента в чате:
-- Общее сообщение без конкретики (приветствие, «цена», «прайс», «хочу на эпиляцию», «+»): ответь только меткой [[series]], а если пишет мужчина — только меткой [[series:men]]. Серию подставит система, разделы 1.1 и 1.2 сама не пересылай.
+- Общее сообщение без конкретики (приветствие, «цена», «прайс», «хочу на эпиляцию», «+») или просьба прислать прайс, в том числе на один аппарат: ответь только меткой [[series]], а если пишет мужчина — только меткой [[series:men]]. Серию подставит система, разделы 1.1 и 1.2 сама не пересылай.
 - Конкретный вопрос: приветствие из раздела «Состояние этого чата» и ответ из нужного раздела, без серии.
 - В остальных сообщениях эти метки не используй.
 
@@ -594,12 +615,12 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     const uz = !/[а-яё]/i.test(text) && /[a-z]/i.test(text);
     if (men || /мужск|мужчин|парен|парн|бород|erkak|soqol/i.test(text)) {
       return uz
-        ? `Assalomu alaykum!\n\n${MEN_INTRO_UZ}\n[[photo:men-candela-uz]]\n===\nQaysi sohalarni lazer epilyatsiya qildirmoqchisiz?`
-        : `${greeting()}\n\n${MEN_INTRO_RU}\n[[photo:men-candela-ru]]\n===\nКакие зоны Вас интересуют?`;
+        ? `Assalomu alaykum!\n\n${MEN_INTRO_UZ}\n[[photo:men-candela-uz]]\n===\n${BRANCHES_UZ}\n===\nQaysi sohalarni lazer epilyatsiya qildirmoqchisiz?`
+        : `${greeting()}\n\n${MEN_INTRO_RU}\n[[photo:men-candela-ru]]\n===\n${BRANCHES_RU}\n===\nКакие зоны Вас интересуют?`;
     }
     return uz
-      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\n${PRICE_ASK.uz.zones}\n${PRICE_ASK.uz.before}`
-      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\n${PRICE_ASK.ru.zones}\n${PRICE_ASK.ru.before}`;
+      ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\n${BRANCHES_UZ}\n===\n${PRICE_ASK.uz.zones}\n${PRICE_ASK.uz.before}`
+      : `💌 ${greeting()}\n\n${DEVICE_PRICE_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:women-hairboss-ru]]\n===\n${BRANCHES_RU}\n===\n${PRICE_ASK.ru.zones}\n${PRICE_ASK.ru.before}`;
   }
 
   /* метка серии от модели → текст серии; серия возможна только первым сообщением, иначе ответа нет и зовём администратора */
@@ -706,8 +727,11 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     ? ADMIN_PHRASE[!/[а-яё]/i.test(text) && /[a-z]/i.test(text) ? 'uz' : 'ru']
     : answer);
 
+  const PRICE_REQUEST = /прайс|прейскурант|prays|price ?list/i;
+  const igSeriesFirst = (raw, history, text) => (!history.length && PRICE_REQUEST.test(text) ? '[[series]]' : raw);
+
   const igFinal = (raw, who, history, text) => igAdminOnly(igPriceQuestions(
-    igPriceGuard(igCalm(igExpand(raw, text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text), who, text);
+    igPriceGuard(igCalm(igExpand(igSeriesFirst(raw, history, text), text, !history.length)), priceAgoFor(who, history, text), menChat(history, text)), history, text), who, text);
 
   /* все чаты Instagram, про которые ИИ что-то помнит */
   async function igChatIds() {
