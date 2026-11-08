@@ -200,7 +200,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const money = (n) => Number(n).toLocaleString('ru-RU').replace(/ /g, ' ');
 
   // одна зона под разными ключами в прайсах аппаратов: модель может выбрать любой
-  const ZONE_ALIASES = { lip: 'lip_m', lip_m: 'lip', bikini_deep: 'bikini_deep_m', bikini_deep_m: 'bikini_deep' };
+  const ZONE_ALIASES = { lip: 'lip_m', lip_m: 'lip', bikini_deep: 'bikini_deep_m', bikini_deep_m: 'bikini_deep', bikini_classic: 'bikini_deep_m' }; // у мужчин бикини только одно
 
   /* блок расчёта в формате студии: заголовок аппарата со стрелкой, «Зона – цена», пустая строка и «Итог» */
   const PRICE_HEAD = {
@@ -225,6 +225,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const zoneSet = (zones) => [...new Set(zones.map((z) => (z.startsWith('bikini') ? 'bikini' : z)))].sort().join();
   const dekaComplex = (zones) => (DEKA_COMPLEXES.find(([set]) => zoneSet(set) === zoneSet(zones)) || [])[1];
 
+  const BIKINI_PLAIN = { ru: 'Бикини', uz: 'Bikini' }; // обычное бикини клиенту пишем просто «бикини»
+
   function priceQuote({ sex, device, zones, lang }, deka) {
     if (sex === 'men' && device !== 'candela_deka') return 'Для мужчин работает только Candela — посчитай на candela_deka.';
     const L = lang === 'uz' ? 'uz' : 'ru';
@@ -237,7 +239,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       if (!row) { missing.push(LH.zones[key] ? LH.zones[key].ru : key); continue; }
       const [zone, , price] = row; // зачёркнутую цену и длительность клиентам не называем
       total += price;
-      lines.push(`${LH.zones[zone][L]} – ${money(price)}`);
+      lines.push(`${zone === 'bikini_classic' ? BIKINI_PLAIN[L] : LH.zones[zone][L]} – ${money(price)}`);
     }
     const note = missing.length ? `\n\n(служебно, клиенту не отправляй: нет в прайсе этого аппарата — ${missing.join(', ')})` : '';
     if (!lines.length) return 'Ни одной из этих зон нет в прайсе этого аппарата.' + note;
@@ -285,7 +287,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 - Сразу вызывай call_admin и сам не отвечай по существу, если клиент описывает состояние своей кожи или зоны (тёмная кожа, пигментация, пятна, раздражение, ожог), подробно рассказывает историю процедур и просит подобрать аппарат или курс, или жалуется на результат. Не пиши «можно» и не подбирай аппарат сам.
 - Отвечай на языке клиента: русский или узбекский (латиница). Узбекские названия зон и аппаратов — как в ключах зон ниже.
 - Если девушка не выбрала аппарат — дай цену и на Candela/DEKA, и на HairBoss.
-- Клиент назвал бикини и не сказал какое: спроси только, классическое или глубокое, и цену пока не называй. Другие зоны не уточняй: руки и ноги считай полностью, усики и усы — это верхняя губа.
+- Клиент назвал бикини и не сказал какое: не спрашивай, сразу считай обычное (bikini_classic). Глубокое (bikini_deep) — только если клиент сам написал, что глубокое. Другие зоны не уточняй: руки и ноги считай полностью, усики и усы — это верхняя губа.
 - Если клиент просит прайс или все цены — отправь фото и коротко подпиши, весь прайс текстом не перечисляй. Девушке: [[photo:women-candela-deka-ru]] и [[photo:women-hairboss-ru]], мужчине: [[photo:men-candela-ru]]. Клиенту на узбекском — те же метки с окончанием -uz.
 
 Запись:
@@ -330,7 +332,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 - В остальных сообщениях эти метки не используй.
 
 Зоны и расчёт цены:
-- Клиент назвал бикини и не сказал какое: задай только этот вопрос и цену пока не называй. RU: «Какое бикини Вас интересует: классическое или глубокое?» UZ: «Qaysi bikini sizni qiziqtiradi: klassikmi yoki chuqurmi?» Когда клиент ответит, посчитай все названные зоны сразу.
+- Клиент назвал бикини и не сказал какое: не спрашивай, сразу считай обычное (bikini_classic). Глубокое (bikini_deep) — только если клиент сам написал, что глубокое.
 - Другие зоны не уточняй: руки и ноги считай полностью, усики и усы — это верхняя губа. Уточняй только то, чего клиент не договорил.
 
 Оформление:
@@ -871,7 +873,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     if (!kb.length) return '';
     return (channel === 'ig' ? '# Уточнения от администраторов студии (дополняют скрипт; если расходятся — прав скрипт)\n' : '# Правила и уточнения от администраторов студии (важнее данных выше)\n') + kb.map((r) => '- ' + r.text).join('\n');
   }
-  const systemFor = (channel, prompts) => (channel === 'ig' ? systemIg(prompts) : systemTg(prompts));
+  /* правило про бикини действует и тогда, когда в панели сохранён старый текст инструкции */
+  const BIKINI_LINE = /Клиент назвал бикини и не сказал какое:.*?(?=Другие зоны|$)/m;
+  const BIKINI_RULE = 'Клиент назвал бикини и не сказал какое: не спрашивай, сразу считай обычное (bikini_classic). Глубокое (bikini_deep) — только если клиент сам написал, что глубокое. ';
+  const systemFor = (channel, prompts) => (channel === 'ig' ? systemIg(prompts) : systemTg(prompts)).replace(BIKINI_LINE, BIKINI_RULE);
 
   /* проверка в панели: тот же агент, но с черновиком вместо сохранённых текстов, без отправок, истории и паузы */
   async function sandbox({ channel, history, text, draft, priceAgoMin }) {
