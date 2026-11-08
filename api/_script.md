@@ -3,7 +3,7 @@
 > Как ИИ-администратор отвечает клиентам в **Instagram Direct** (дословно) и в **Telegram** (своими словами, по тем же фактам).
 > Здесь собраны типовые вопросы клиентов и эталонные ответы. В Instagram агент отправляет эти ответы дословно, в Telegram пересказывает своими словами. Если ответа нет, передаёт вопрос администратору.
 
-**Обновлено:** 07.11.2026 · **Готовых сценариев:** 28
+**Обновлено:** 07.11.2026 · **Готовых сценариев:** 29
 
 ---
 
@@ -304,6 +304,36 @@
 > Bizning apparatlardan qaysi biri sizga mos kelishini xohlaysiz — Candela, DEKA yoki HairBoss?
 >
 > Narxlarni hisoblab beramiz va sizga qulay vaqtni tanlaymiz.
+
+---
+
+### 1.5. Первый контакт — реклама DEKA MOTUS PRO
+
+Клиент нажал кнопку рекламы: «Скиньте прайс на DEKA MOTUS PRO (2026) !» или «DEKA MOTUS PRO (2026) uchun narxlar ro‘yxatini yuboring!».
+
+**RU:**
+> Добрый день 💌 Спасибо за интерес к DEKA.
+> 
+> В Laser House теперь самая последняя итальянская DEKA MOTUS PRO: александритовый аппарат с охлаждаемым сапфировым наконечником. Процедура практически безболезненная.
+> 
+> Сейчас пришлём цены и комплексы.
+
+**UZ:**
+> 💌 DEKA’ga qiziqish bildirganingiz uchun rahmat.
+> 
+> Laser House’da endi Italiyaning eng so‘nggi DEKA MOTUS PRO apparati mavjud: sovitiladigan sapfir uchlikka ega aleksandrit apparati. Muolaja deyarli og‘riqsiz.
+> 
+> Hozir narxlar va komplekslarni yuboramiz.
+
+Затем два фото: прайс Candela / DEKA и комплексы DEKA MOTUS PRO. Затем филиалы (раздел 1.1 ③) и вопрос:
+
+**RU:**
+> Какие зоны вас интересуют?
+
+**UZ:**
+> Qaysi sohalar sizni qiziqtirmoqda?
+
+**Важно для агента:** серию отправляет код. Этому клиенту считать только на DEKA, цену комплекса подставляет price_quote.
 
 ---
 

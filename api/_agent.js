@@ -100,6 +100,19 @@ Erkaklar uchun eng mashhur sohalar:
 — chuqur bikini sohasi (intim soha)
 — qo‘ltiq osti`;
 
+/* Скрипт, раздел 1.5: первое сообщение клиента из рекламы DEKA MOTUS PRO */
+const DEKA_INTRO_RU = `Добрый день 💌 Спасибо за интерес к DEKA.
+
+В Laser House теперь самая последняя итальянская DEKA MOTUS PRO: александритовый аппарат с охлаждаемым сапфировым наконечником. Процедура практически безболезненная.
+
+Сейчас пришлём цены и комплексы.`;
+
+const DEKA_INTRO_UZ = `💌 DEKA’ga qiziqish bildirganingiz uchun rahmat.
+
+Laser House’da endi Italiyaning eng so‘nggi DEKA MOTUS PRO apparati mavjud: sovitiladigan sapfir uchlikka ega aleksandrit apparati. Muolaja deyarli og‘riqsiz.
+
+Hozir narxlar va komplekslarni yuboramiz.`;
+
 /* Скрипт, раздел 1.1 ③: филиалы — шаг серии первого контакта (у мужчин тот же текст) */
 const BRANCHES_RU = `Доступны два филиала:
 
@@ -191,11 +204,28 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
 
   /* блок расчёта в формате студии: заголовок аппарата со стрелкой, «Зона – цена», пустая строка и «Итог» */
   const PRICE_HEAD = {
-    ru: { women: { candela_deka: 'АЛЕКСАНДРИТ КАНДЕЛА / ДЕКА ⤵️', hairboss: 'ДИОД ⤵️' }, men: { candela_deka: 'АЛЕКСАНДРИТ КАНДЕЛА ⤵️' }, total: 'Итог' },
-    uz: { women: { candela_deka: 'ALEKSANDRIT CANDELA / DEKA ⤵️', hairboss: 'DIOD ⤵️' }, men: { candela_deka: 'ALEKSANDRIT CANDELA ⤵️' }, total: 'Jami' }
+    ru: { women: { candela_deka: 'АЛЕКСАНДРИТ КАНДЕЛА / ДЕКА ⤵️', hairboss: 'ДИОД ⤵️' }, men: { candela_deka: 'АЛЕКСАНДРИТ КАНДЕЛА ⤵️' }, deka: 'АЛЕКСАНДРИТ ДЕКА ⤵️', total: 'Итог' },
+    uz: { women: { candela_deka: 'ALEKSANDRIT CANDELA / DEKA ⤵️', hairboss: 'DIOD ⤵️' }, men: { candela_deka: 'ALEKSANDRIT CANDELA ⤵️' }, deka: 'ALEKSANDRIT DEKA ⤵️', total: 'Jami' }
   };
 
-  function priceQuote({ sex, device, zones, lang }) {
+  /* комплексы DEKA MOTUS PRO с фото deka-complex: цена действует при точном совпадении зон, бикини любое */
+  const DEKA_COMPLEXES = [
+    [['armpits', 'bikini'], 550000],
+    [['face_full', 'armpits'], 560000],
+    [['face_full', 'armpits', 'bikini'], 860000],
+    [['legs_half', 'armpits'], 680000],
+    [['legs_half', 'bikini'], 840000],
+    [['legs_half', 'bikini', 'armpits'], 910000],
+    [['legs_full', 'bikini', 'armpits'], 1100000],
+    [['legs_full', 'arms_full'], 950000],
+    [['face_full', 'armpits', 'legs_full'], 1100000],
+    [['bikini', 'armpits', 'legs_full', 'arms_full'], 1450000],
+    [['legs_half', 'arms_lower', 'bikini', 'armpits'], 1120000]
+  ];
+  const zoneSet = (zones) => [...new Set(zones.map((z) => (z.startsWith('bikini') ? 'bikini' : z)))].sort().join();
+  const dekaComplex = (zones) => (DEKA_COMPLEXES.find(([set]) => zoneSet(set) === zoneSet(zones)) || [])[1];
+
+  function priceQuote({ sex, device, zones, lang }, deka) {
     if (sex === 'men' && device !== 'candela_deka') return 'Для мужчин работает только Candela — посчитай на candela_deka.';
     const L = lang === 'uz' ? 'uz' : 'ru';
     const list = (LH.prices[sex] || {})[DEVICES[device]] || [];
@@ -211,8 +241,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     }
     const note = missing.length ? `\n\n(служебно, клиенту не отправляй: нет в прайсе этого аппарата — ${missing.join(', ')})` : '';
     if (!lines.length) return 'Ни одной из этих зон нет в прайсе этого аппарата.' + note;
-    const block = [PRICE_HEAD[L][sex][device], ...lines];
-    if (lines.length > 1) block.push('', `${PRICE_HEAD[L].total} – ${money(total)}`);
+    const isDeka = deka && sex === 'women' && device === 'candela_deka'; // клиент видел фото комплексов DEKA
+    const final = (isDeka && !missing.length && dekaComplex(zones)) || total;
+    const block = [isDeka ? PRICE_HEAD[L].deka : PRICE_HEAD[L][sex][device], ...lines];
+    if (lines.length > 1) block.push('', `${PRICE_HEAD[L].total} – ${money(final)}`);
     return block.join('\n') + note;
   }
 
@@ -328,7 +360,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const systemIg = (p = DEFAULTS) => `${p.ig}\n\n${p.pricing}\n\n${p.scope}\n${FIXED}\n\n# Скрипт\n${p.script}\n\n${zonesBlock}`;
 
   /* фото из скрипта лежат на сайте: метка [[photo:ключ]] → assets/img/prices/ключ.jpg */
-  const PHOTOS = ['women-candela-deka-ru', 'women-candela-deka-uz', 'women-hairboss-ru', 'women-hairboss-uz', 'men-candela-ru', 'men-candela-uz', 'phototypes'];
+  const PHOTOS = ['women-candela-deka-ru', 'women-candela-deka-uz', 'women-hairboss-ru', 'women-hairboss-uz', 'men-candela-ru', 'men-candela-uz', 'deka-complex-ru', 'deka-complex-uz', 'phototypes'];
   const photoUrl = (key) => (PHOTOS.includes(key) ? `https://laserhouse.uz/assets/img/prices/${key}.jpg` : null);
 
   /* приветствие по времени в Ташкенте (UTC+5), без минут — иначе кэш истории сбрасывался бы каждую минуту */
@@ -571,7 +603,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   async function runTool(name, input, who) {
     if (name === 'call_admin') who.adminCalled = true; // в Instagram ответ клиенту после этого — только фраза о передаче
     if (name === 'submit_booking') who.booked = true;  // в Instagram ответ — текст 7.5, дальше ведёт администратор
-    if (name === 'price_quote') return priceQuote(input);
+    if (name === 'price_quote') return priceQuote(input, who.deka);
     // проверка в панели: никому ничего не отправляем и чат не ставим на паузу
     if (who.test) return name === 'submit_booking' ? 'Заявка отправлена администраторам.' : 'Администратор получил уведомление.';
     const src = `${CHANNELS[who.channel]} · ${who.label}`;
@@ -615,12 +647,21 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   };
   const IG_DONE_TTL = 10 * 365 * 24 * 3600;
 
+  /* кнопка рекламы DEKA MOTUS PRO. У общей рекламы в кнопке есть Candela или Hair Boss — у неё обычная серия */
+  const isDekaAd = (text) => /deka\s*motus/i.test(text) && !/candela|кандел|hair\s*boss/i.test(text);
+  const dekaChat = (history) => history.some((m) => String(m.content).includes('[[photo:deka-complex-'));
+
   function igFirstContact(text, men) {
     const uz = !/[а-яё]/i.test(text) && /[a-z]/i.test(text);
     if (men || /мужск|мужчин|парен|парн|бород|erkak|soqol/i.test(text)) {
       return uz
         ? `Assalomu alaykum!\n\n${MEN_INTRO_UZ}\n[[photo:men-candela-uz]]\n===\n${BRANCHES_UZ}\n===\nQaysi sohalarni lazer epilyatsiya qildirmoqchisiz?`
         : `${greeting()}\n\n${MEN_INTRO_RU}\n[[photo:men-candela-ru]]\n===\n${BRANCHES_RU}\n===\nКакие зоны Вас интересуют?`;
+    }
+    if (isDekaAd(text)) {
+      return uz
+        ? `${DEKA_INTRO_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:deka-complex-uz]]\n===\n${BRANCHES_UZ}\n===\nQaysi sohalar sizni qiziqtirmoqda?`
+        : `${DEKA_INTRO_RU}\n[[photo:women-candela-deka-ru]]\n[[photo:deka-complex-ru]]\n===\n${BRANCHES_RU}\n===\nКакие зоны вас интересуют?`;
     }
     return uz
       ? `💌 Assalomu alaykum!\n\n${DEVICE_PRICE_UZ}\n[[photo:women-candela-deka-uz]]\n[[photo:women-hairboss-uz]]\n===\n${BRANCHES_UZ}\n===\n${PRICE_ASK.uz.before}`
@@ -639,7 +680,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   const priceKey = (id) => `ai:price:ig:${id}`;
   const PRICE_TTL = 30 * 24 * 3600;
   const PRICE_HOUR = 3600 * 1000;
-  const PRICE_TAG = /\[\[photo:(women-candela-deka|women-hairboss|men-candela)-(ru|uz)\]\]/;
+  const PRICE_TAG = /\[\[photo:(women-candela-deka|women-hairboss|men-candela|deka-complex)-(ru|uz)\]\]/;
   const PRICE_TAGS = new RegExp(PRICE_TAG.source, 'g');
   const PRICE_ABOVE = { ru: 'Прайс уже отправлен выше в переписке.', uz: 'Narxlar ro‘yxati yuqorida, yozishmada yuborilgan.' };
 
@@ -663,7 +704,7 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     return !!tags.length && tags[tags.length - 1].startsWith('[[photo:men-');
   }
 
-  function igPriceGuard(answer, ago, men) {
+  function igPriceGuard(answer, ago, men, deka) {
     if (String(answer).includes(PRICE_ABOVE.ru)) return PRICE_ABOVE.ru;
     if (String(answer).includes(PRICE_ABOVE.uz)) return PRICE_ABOVE.uz;
     const first = String(answer).match(PRICE_TAG);
@@ -680,12 +721,12 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     if (ago != null && ago < PRICE_HOUR) {
       return String(answer).replace(PRICE_TAGS, '').replace(/\n{3,}/g, '\n\n').trim() || PRICE_ABOVE[lang];
     }
-    if (first[1] === 'men-candela') return answer;
-    let placed = false; // девушке всегда оба фото, даже если она спросила про один аппарат
+    if (first[1] === 'men-candela' || String(answer).includes('[[photo:deka-complex-')) return answer;
+    let placed = false; // девушке всегда оба фото, даже если она спросила про один аппарат; клиенту из рекламы DEKA — прайс и комплексы
     return String(answer).replace(PRICE_TAGS, () => {
       if (placed) return '';
       placed = true;
-      return `[[photo:women-candela-deka-${lang}]]\n[[photo:women-hairboss-${lang}]]`;
+      return `[[photo:women-candela-deka-${lang}]]\n[[photo:${deka ? 'deka-complex' : 'women-hairboss'}-${lang}]]`;
     });
   }
 
@@ -738,10 +779,10 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
     : answer);
 
   const PRICE_REQUEST = /прайс|прейскурант|prays|price ?list/i;
-  const igSeriesFirst = (raw, history, text) => (!history.length && PRICE_REQUEST.test(text) ? '[[series]]' : raw);
+  const igSeriesFirst = (raw, history, text) => (!history.length && (PRICE_REQUEST.test(text) || isDekaAd(text)) ? '[[series]]' : raw);
 
   const igFinal = (raw, who, history, text) => igAdminOnly(igPriceQuestions(
-    igPriceGuard(igCalm(igExpand(igSeriesFirst(raw, history, text), text, !history.length, who.menAd)), priceAgoFor(who, history, text), who.menAd || menChat(history, text)), history, text), who, text);
+    igPriceGuard(igCalm(igExpand(igSeriesFirst(raw, history, text), text, !history.length, who.menAd)), priceAgoFor(who, history, text), who.menAd || menChat(history, text), dekaChat(history)), history, text), who, text);
 
   /* все чаты Instagram, про которые ИИ что-то помнит */
   async function igChatIds() {
@@ -856,6 +897,8 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
       notes.push(`Приветствие сейчас: RU — ${greeting()} UZ — Assalomu alaykum!`);
       notes.push(history.length ? 'Это не первое сообщение клиента: не здоровайся заново, метки серии не используй.' : 'Это первое сообщение клиента в этом чате.');
       if (who.menAd) notes.push('Клиент пришёл по мужской рекламе — это мужчина: только Candela и мужской прайс, серия — [[series:men]].');
+      who.deka = dekaChat(history);
+      if (who.deka) notes.push('Клиент пришёл по рекламе DEKA MOTUS PRO и видел прайс и комплексы DEKA. Считай только на candela_deka, HairBoss и Candela сама не предлагай. Голени — это legs_half. Цену комплекса price_quote подставляет сам.');
       const ago = priceAgo(who, history);
       if (ago != null && photoFailed(text)) notes.push('Клиент пишет, что не видит фото или оно не открылось. Если речь о прайсе, отправь весь прайс заново только метками фото: девушке оба женских фото, мужчине мужское. Администратора не зови и ничего не спрашивай.');
       else if (ago != null && ago < PRICE_HOUR) notes.push(`Прайс отправлен в этом чате меньше часа назад. Если клиент снова просит прайс, фото не отправляй и напиши только: RU «${PRICE_ABOVE.ru}» UZ «${PRICE_ABOVE.uz}»`);
@@ -912,6 +955,6 @@ module.exports = function createAgent({ LH, BRANCHES, priceText, T, notifyAdmins
   return {
     reply, pause, isPaused, pausedIg, resumeIg, igOnly, igChatIds, igForget, igChatInfo, active, enabled, flushOutbox, kbList, kbAdd, kbRemove, kbUpdate, splitText,
     panelState, savePrompts, restorePrompts, setSettings, sandbox, preview, HISTORY_LIMIT,
-    _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _tgCalm: tgCalm, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
+    _priceQuote: priceQuote, _systemTg: () => systemTg(), _systemIg: () => systemIg(), _igExpand: igExpand, _igPriceGuard: igPriceGuard, _menChat: menChat, _photoFailed: photoFailed, _igPriceQuestions: igPriceQuestions, _igCalm: igCalm, _tgCalm: tgCalm, _toParts: (a) => toParts(a, photoUrl), _priceQuote: priceQuote
   };
 };

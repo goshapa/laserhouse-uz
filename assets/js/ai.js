@@ -494,7 +494,7 @@
 
   /* ---------- история ---------- */
   /* ---------- переписки Instagram: что писал клиент и что ответил ИИ ---------- */
-  const PHOTO_NAME = { 'women-candela-deka': 'Прайс Candela / DEKA', 'women-hairboss': 'Прайс HairBoss', 'men-candela': 'Мужской прайс Candela', phototypes: 'Фототипы кожи' };
+  const PHOTO_NAME = { 'women-candela-deka': 'Прайс Candela / DEKA', 'women-hairboss': 'Прайс HairBoss', 'men-candela': 'Мужской прайс Candela', 'deka-complex': 'Комплексы DEKA', phototypes: 'Фототипы кожи' };
   function chatBubbles(text) {
     return String(text).split(/^\s*===\s*$/m).flatMap((chunk) => chunk.split(/(\[\[photo:[\w-]+\]\])/)).map((piece) => {
       const ph = piece.match(/^\[\[photo:([\w-]+)\]\]$/);
